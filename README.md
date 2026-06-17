@@ -1,2 +1,2 @@
 # Build-with-Andrew
-Build with Andrew - deeplearning.ai
+Build with Andrew - deeplearning.ai - vibe coding
