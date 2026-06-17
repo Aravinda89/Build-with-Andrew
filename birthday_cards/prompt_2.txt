@@ -1,0 +1,12 @@
+Create a web page to help me write birthday cards where I can give a person's name, age and hobby and it gives me back a funny message. Add a festive title and colors. Display the card on the right side, and make it look like the inside of a birthday card. Add a fun title at the top of the page. And instead of replacing the old cards, keep them visible and stack them underneath the new ones. 
+
+
+Make it have five clearly labeled inputs: Name, Age, Hobby, Adjective, Plural Noun. 
+
+Add an "I'm feeling lucky" button that will automatically fill in the blanks with random words. Give it some funny pre-defined word choices. 
+
+Make the titles and subtitles fancier. Add buttons to copy the cards to the clipboard. 
+
+Make the color scheme blue. 
+
+I don't like the blue color scheme, make it purple instead. 
