@@ -3,3 +3,5 @@ Build me a table tennis game as a single HTML file. User plays against computer 
 At the top, add 3 difficulty levels to choose from and allow the user to specify the number of points required to win. At the bottom, keep the scores. Everything is visible at once. 
 
 Make the playground green, the paddles beige, and the ball white. Insert this background and stretch it to window's size: https://raw.githubusercontent.com/https-deeplearning-ai/lc-build-with-andrew-platform/main/img/tabletennis43.jpg 
+
+add Sound effects when the ball hits the paddle
