@@ -1,0 +1,430 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>CardCrafter — Funny Birthday Card Maker</title>
+  <style>
+    /* Page layout */
+    :root{
+      --bg1: #fff7f0;
+      --bg2: #fff1ff;
+      --accent: #ff6b6b;
+      --accent-2: #ffb86b;
+      --card-paper: #fffefc;
+      --card-edge: #f1e9e7;
+      --text: #333;
+      --muted: #666;
+    }
+    html,body{
+      height:100%;
+      margin:0;
+      font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: radial-gradient(circle at 10% 10%, rgba(255,235,238,0.6), transparent 15%),
+                  radial-gradient(circle at 90% 90%, rgba(232,240,255,0.6), transparent 15%),
+                  linear-gradient(120deg,var(--bg1), var(--bg2));
+      color:var(--text);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      padding:24px;
+      box-sizing:border-box;
+    }
+
+    /* Top festive title */
+    header{
+      text-align:center;
+      margin-bottom:18px;
+    }
+    header h1{
+      margin:0;
+      font-size:28px;
+      letter-spacing:1px;
+      color:var(--accent);
+      text-shadow: 0 2px 0 rgba(0,0,0,0.06);
+    }
+    header p{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    /* Main content - form left, card stack right */
+    .main{
+      display:flex;
+      gap:20px;
+      align-items:flex-start;
+      max-width:1000px;
+      margin:0 auto;
+    }
+
+    /* Form column */
+    .controls{
+      width:360px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,250,245,0.9));
+      border-radius:12px;
+      padding:18px;
+      box-shadow: 0 6px 18px rgba(20,20,30,0.08);
+      border:1px solid rgba(0,0,0,0.03);
+    }
+    .controls h2{
+      margin:0 0 8px 0;
+      color:var(--accent-2);
+    }
+    label{
+      display:block;
+      font-size:14px;
+      margin-top:12px;
+      color:var(--muted);
+    }
+    input[type="text"],
+    input[type="number"],
+    select,
+    textarea{
+      width:100%;
+      padding:10px 12px;
+      margin-top:6px;
+      border-radius:8px;
+      border:1px solid rgba(0,0,0,0.08);
+      font-size:14px;
+      box-sizing:border-box;
+      background:white;
+    }
+    .buttons{
+      display:flex;
+      gap:8px;
+      margin-top:14px;
+    }
+    button{
+      padding:10px 14px;
+      border-radius:8px;
+      border:0;
+      cursor:pointer;
+      font-weight:600;
+      color:white;
+    }
+    .btn-go{ background: linear-gradient(90deg,var(--accent), #ff8c6b); }
+    .btn-clear{ background:#8888ff; }
+    .btn-reset{ background:#a0a0a0; }
+
+    .hint{
+      margin-top:10px;
+      font-size:13px;
+      color:var(--muted);
+    }
+
+    /* Cards column */
+    .cards-column{
+      flex:1;
+      min-height:200px;
+      display:flex;
+      flex-direction:column;
+      align-items:flex-end; /* keep cards on the right */
+    }
+
+    /* Card stack container on the right */
+    .stack{
+      width:420px;
+      display:flex;
+      flex-direction:column;
+      align-items:flex-end;
+      gap:14px;
+    }
+
+    /* Single card styling (open inside-of-card look) */
+    .card {
+      width:420px;
+      border-radius:12px;
+      background: linear-gradient(180deg,var(--card-paper), #fffefc);
+      border:1px solid var(--card-edge);
+      box-shadow: 0 12px 30px rgba(20,20,30,0.12);
+      overflow:visible;
+      transform-origin: top right;
+      position:relative;
+      padding:16px;
+      display:flex;
+    }
+
+    /* simulate a fold line and two inside panels */
+    .card::before{
+      content:"";
+      position:absolute;
+      left:50%;
+      top:12px;
+      bottom:12px;
+      width:2px;
+      background: linear-gradient(180deg, rgba(0,0,0,0.03), rgba(0,0,0,0.01));
+      transform:translateX(-50%);
+      border-radius:2px;
+    }
+
+    .left-panel, .right-panel{
+      width:50%;
+      padding:12px 14px;
+      box-sizing:border-box;
+    }
+
+    .left-panel{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .decor{
+      text-align:center;
+      color:var(--accent);
+      font-size:22px;
+      font-weight:700;
+      letter-spacing:1px;
+    }
+    .balloons{
+      font-size:34px;
+      margin-top:6px;
+      opacity:0.9;
+    }
+    .right-panel{
+      padding-left:22px;
+      color:var(--text);
+    }
+    .message{
+      font-size:16px;
+      line-height:1.4;
+      white-space:pre-wrap;
+    }
+    .signature{
+      margin-top:12px;
+      text-align:right;
+      font-weight:700;
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    /* small timestamp */
+    .meta{
+      margin-top:8px;
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    /* make newer cards sit above older ones visually */
+    .stack .card{
+      transition: transform .15s ease, box-shadow .15s ease;
+    }
+    .stack .card:hover{
+      transform: translateY(-6px);
+      box-shadow: 0 18px 40px rgba(20,20,30,0.18);
+    }
+
+    /* Responsive */
+    @media (max-width:880px){
+      .main{ flex-direction:column; align-items:center; }
+      .controls{ width:100%; max-width:540px;}
+      .stack{ width:100%; max-width:540px; align-items:center; }
+      .cards-column{ align-items:center; }
+      .card{ width:100%; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>CardCrafter: Blast of Birthday Cheer!</h1>
+    <p>Give a name, age and hobby — get a funny inside-card message. New cards stack on top.</p>
+  </header>
+
+  <div class="main">
+    <div class="controls" aria-label="Card controls">
+      <h2>Make a funny birthday message</h2>
+
+      <label for="name">Name</label>
+      <input id="name" type="text" placeholder="e.g. Alex" />
+
+      <label for="age">Age</label>
+      <input id="age" type="number" min="0" placeholder="e.g. 29" />
+
+      <label for="hobby">Hobby (one word or short phrase)</label>
+      <input id="hobby" type="text" placeholder="e.g. gardening" />
+
+      <label for="tone">Tone (quick pick)</label>
+      <select id="tone">
+        <option value="silly">Silly</option>
+        <option value="sarcastic">Playful/Sarcastic</option>
+        <option value="sweet">Sweet & funny</option>
+      </select>
+
+      <div class="buttons">
+        <button id="generate" class="btn-go" type="button">Generate Card</button>
+        <button id="clear" class="btn-clear" type="button">Clear Inputs</button>
+        <button id="reset" class="btn-reset" type="button">Clear All Cards</button>
+      </div>
+
+      <div class="hint">
+        Tip: leave fields blank for random picks. Cards appear on the right and stack with newest at the top.
+      </div>
+    </div>
+
+    <div class="cards-column" aria-live="polite">
+      <div class="stack" id="stack">
+        <!-- Generated cards will be inserted here. New cards appear first (top), older cards stack below. -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Beginner-friendly JavaScript with comments.
+    // The page listens for clicks on "Generate Card", makes a fun message,
+    // and then inserts a new card at the top of the stack so older cards sit underneath.
+
+    // Helpers: random pick, safe text
+    function pick(arr){
+      return arr[Math.floor(Math.random()*arr.length)];
+    }
+    function escapeHtml(s){
+      if(!s) return "";
+      return String(s)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;");
+    }
+
+    // Collections of phrases and templates
+    const sillyLines = [
+      "May your cake be as big as your hobby-induced mess!",
+      "Another year older, but still too young to stop dancing in public.",
+      "You're now officially a classic — collect dust and compliments.",
+      "If birthdays were apps, you'd be 'Premium Vintage' now.",
+      "May your wisdom be like your Wi-Fi signal: stronger with occasional naps."
+    ];
+    const sarcasticLines = [
+      "Age is merely the number of candles we had to buy.",
+      "Congrats — you've survived another 365-day tutorial!",
+      "Don't worry about the wrinkles. Think of them as laughter topography.",
+      "Older? Sure. Wiser? Debatable. Funnier? Definitely."
+    ];
+    const sweetLines = [
+      "Hope your day is full of cake, giggles and everything you love.",
+      "Here's to more days chasing what makes you smile.",
+      "Wishing you extra sprinkles and extra hugs today.",
+      "May your year be as joyful as your favorite hobby."
+    ];
+
+    // Templates that use name, age, hobby and tone
+    const templates = [
+      (n,a,h) => `Hey ${n}! Happy ${a}th! I heard you've been into ${h}. Perfect — now you can blame every snack crumb on "creative process."`,
+      (n,a,h) => `Happy ${a}th, ${n}! At this point, your ${h} skills are like fine cheese: impressive, a little stinky, and best enjoyed with friends.`,
+      (n,a,h) => `${n}! ${a} looks good on you — especially while doing ${h}. Keep rocking it and pretending to be productive!`,
+      (n,a,h) => `To ${n} on their ${a}th: may your ${h} always reward you with bragging rights and zero assembly instructions.`,
+      (n,a,h) => `Happy birthday, ${n}! ${a} years of excellence in ${h}. That's a lot of practice photos for the future blackmail album!`
+    ];
+
+    // Get DOM elements
+    const nameInput = document.getElementById('name');
+    const ageInput = document.getElementById('age');
+    const hobbyInput = document.getElementById('hobby');
+    const toneInput = document.getElementById('tone');
+    const generateBtn = document.getElementById('generate');
+    const clearBtn = document.getElementById('clear');
+    const resetBtn = document.getElementById('reset');
+    const stack = document.getElementById('stack');
+
+    // Random default data for blank inputs
+    const sampleNames = ["Alex","Sam","Jordan","Taylor","Jamie","Casey"];
+    const sampleHobbies = ["baking","gardening","gaming","knitting","kayaking","photography"];
+
+    // Build a funny message based on inputs and tone
+    function buildMessage(name, age, hobby, tone){
+      const n = name || pick(sampleNames);
+      const a = (age || Math.floor(Math.random()*40)+18); // default 18-57
+      const h = hobby || pick(sampleHobbies);
+
+      // Choose a base template and a tone line
+      const base = pick(templates)(n,a,h);
+
+      let toneLine = "";
+      if(tone === 'silly'){
+        toneLine = pick(sillyLines);
+      } else if(tone === 'sarcastic'){
+        toneLine = pick(sarcasticLines);
+      } else {
+        toneLine = pick(sweetLines);
+      }
+
+      // Combine them with a playful sign-off
+      const signOff = `Cheers,\nYour favorite human (probably me)`;
+      return `${base}\n\n${toneLine}\n\n${signOff}`;
+    }
+
+    // Create card HTML (inside-of-card look) and prepend to stack
+    function addCardToStack(name, age, hobby, tone){
+      const now = new Date();
+      const time = now.toLocaleString();
+      const message = buildMessage(name, age, hobby, tone);
+
+      // Escape values for safe insertion
+      const escName = escapeHtml(name || "");
+      const escAge = escapeHtml(age || "");
+      const escHobby = escapeHtml(hobby || "");
+      const escMsg = escapeHtml(message);
+
+      const cardHtml = `
+        <div class="card" role="article" aria-label="Birthday card for ${escName || 'Friend'}">
+          <div class="left-panel">
+            <div>
+              <div class="decor">Happy Birthday!</div>
+              <div class="balloons">🎈🎉🎂</div>
+            </div>
+          </div>
+          <div class="right-panel">
+            <div class="message">${escMsg}</div>
+            <div class="signature">— From your pal</div>
+            <div class="meta">For: ${escName || 'Someone special'}${escAge ? ' • Age: '+escAge : ''}${escHobby ? ' • Hobby: '+escHobby : ''} • ${time}</div>
+          </div>
+        </div>
+      `;
+
+      // Insert at the top so newer cards appear above older ones
+      stack.insertAdjacentHTML('afterbegin', cardHtml);
+    }
+
+    // Event handlers
+    generateBtn.addEventListener('click', () => {
+      const name = nameInput.value.trim();
+      const age = ageInput.value.trim();
+      const hobby = hobbyInput.value.trim();
+      const tone = toneInput.value;
+
+      addCardToStack(name, age, hobby, tone);
+
+      // Clear inputs optionally (here we leave them for easy editing; if you'd like them cleared uncomment next lines)
+      // nameInput.value = '';
+      // ageInput.value = '';
+      // hobbyInput.value = '';
+    });
+
+    clearBtn.addEventListener('click', () => {
+      nameInput.value = '';
+      ageInput.value = '';
+      hobbyInput.value = '';
+      toneInput.value = 'silly';
+      nameInput.focus();
+    });
+
+    resetBtn.addEventListener('click', () => {
+      if(confirm("Remove all generated cards?")) {
+        stack.innerHTML = "";
+      }
+    });
+
+    // Accessibility: allow Enter key in inputs to generate
+    [nameInput, ageInput, hobbyInput].forEach(input =>{
+      input.addEventListener('keydown', (e)=>{
+        if(e.key === 'Enter'){
+          generateBtn.click();
+        }
+      });
+    });
+
+    // Add one sample card on load to show how it looks
+    window.addEventListener('load', () => {
+      addCardToStack("Friend", "30", "celebrating", "silly");
+    });
+  </script>
+</body>
+</html>
