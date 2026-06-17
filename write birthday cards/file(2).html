@@ -1,0 +1,450 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Birthday Card Helper — Inside Card Preview</title>
+  <style>
+    :root{
+      --bg1:#fff7ed;
+      --bg2:#fff0f6;
+      --panel:#ffffff;
+      --accent1:#ff5d8f;
+      --accent2:#7c3aed;
+      --paper:#fffdf9;
+      --muted:#4b5563;
+      --card-shadow: 0 12px 40px rgba(15,23,42,0.12);
+      --radius:12px;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+
+    /* Page */
+    body{
+      margin:0;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background: linear-gradient(135deg,var(--bg1),var(--bg2));
+      padding:28px;
+      color:#0b1220;
+    }
+
+    /* Main container */
+    .wrap{
+      width:100%;
+      max-width:1100px;
+      background:var(--panel);
+      border-radius:14px;
+      box-shadow: var(--card-shadow);
+      padding:18px;
+      box-sizing:border-box;
+    }
+
+    /* Layout: left inputs, right card preview */
+    .layout{
+      display:grid;
+      grid-template-columns: 420px 1fr;
+      gap:18px;
+      align-items:start;
+    }
+
+    /* Left panel: controls */
+    .controls{
+      padding:14px;
+      border-radius:10px;
+      background: linear-gradient(180deg,#ffffff,#fffaf8);
+      border:1px solid rgba(15,23,42,0.03);
+    }
+    h2{
+      margin:0 0 8px 0;
+      font-size:18px;
+      background: linear-gradient(90deg,var(--accent1),var(--accent2));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color:transparent;
+    }
+    p.lead{
+      margin:0 0 12px 0;
+      color:var(--muted);
+      font-size:13px;
+    }
+    .form-row{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:12px;
+    }
+    label{ display:block; font-size:13px; color:#102a43; margin-bottom:6px; }
+    input[type="text"], input[type="number"]{
+      padding:10px 12px;
+      border:1px solid #eef2ff;
+      border-radius:9px;
+      font-size:14px;
+      width:100%;
+      box-sizing:border-box;
+      background:linear-gradient(180deg,#ffffff,#fffdfb);
+    }
+    .col{ flex:1 1 160px; min-width:140px; }
+    .actions{ display:flex; gap:10px; flex-wrap:wrap; margin-top:6px; }
+    button{
+      border:0;
+      padding:10px 14px;
+      border-radius:10px;
+      cursor:pointer;
+      font-weight:700;
+      color:white;
+      background: linear-gradient(90deg,var(--accent1),var(--accent2));
+      box-shadow: 0 8px 20px rgba(124,58,237,0.10);
+    }
+    button.secondary{
+      background:linear-gradient(180deg,#fff,#f7f8fb);
+      color:#0f172a;
+      border:1px solid #e6eef2;
+      box-shadow:none;
+      font-weight:600;
+    }
+    .hint{ font-size:13px; color:var(--muted); margin-top:10px; }
+
+    /* Right panel: card preview */
+    .preview-wrap{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:14px;
+    }
+
+    /* The open card look: two inner pages (left and right) */
+    .card-preview{
+      width:720px;
+      max-width:100%;
+      perspective:1200px; /* small 3D perspective if needed */
+      display:flex;
+      justify-content:center;
+    }
+
+    .card{
+      width:680px;
+      max-width:100%;
+      height:360px;
+      border-radius:12px;
+      box-shadow: 0 20px 60px rgba(10,10,30,0.12);
+      background:linear-gradient(90deg,#faf8ff,#fffdf5);
+      overflow:visible;
+      position:relative;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+      box-sizing:border-box;
+    }
+
+    /* crease in the middle */
+    .card::after{
+      content:"";
+      position:absolute;
+      left:50%;
+      top:6%;
+      bottom:6%;
+      width:2px;
+      transform:translateX(-50%);
+      background:linear-gradient(180deg, rgba(0,0,0,0.06), rgba(0,0,0,0.02));
+      filter:blur(0.3px);
+      opacity:0.6;
+      border-radius:2px;
+    }
+
+    .inside{
+      display:flex;
+      width:100%;
+      gap:12px;
+      padding:12px;
+      box-sizing:border-box;
+    }
+
+    .page{
+      flex:1;
+      min-width:0;
+      border-radius:8px;
+      padding:18px;
+      box-sizing:border-box;
+      background: linear-gradient(180deg,var(--paper),#fffdf2);
+      border:1px solid rgba(10,10,30,0.03);
+      box-shadow: inset 0 2px 6px rgba(10,10,30,0.02);
+      position:relative;
+      overflow:hidden;
+      height:100%;
+      display:flex;
+      flex-direction:column;
+    }
+
+    /* subtle paper texture using radial gradients */
+    .page::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background-image:
+        radial-gradient(ellipse at 10% 10%, rgba(0,0,0,0.01) 0, transparent 15%),
+        radial-gradient(ellipse at 80% 80%, rgba(0,0,0,0.008) 0, transparent 12%);
+      opacity:0.6;
+      pointer-events:none;
+      mix-blend-mode:overlay;
+    }
+
+    /* left inner page decoration */
+    .left .big{
+      font-size:28px;
+      font-weight:800;
+      margin:6px 0 8px 0;
+      background: linear-gradient(90deg,var(--accent2),var(--accent1));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color:transparent;
+    }
+    .left .note{
+      color:var(--muted);
+      font-size:13px;
+      margin-top:6px;
+    }
+
+    /* right inner page: message area */
+    .right .greeting{
+      font-size:22px;
+      font-weight:800;
+      margin:0 0 8px 0;
+      color:#111827;
+    }
+    .right .message{
+      font-size:15px;
+      line-height:1.5;
+      color:#0b1220;
+      margin-bottom:12px;
+      white-space:pre-wrap;
+      overflow:auto;
+      flex:1;
+    }
+    .right .signature{
+      font-size:13px;
+      color:var(--muted);
+      text-align:right;
+      margin-top:8px;
+    }
+
+    /* small balloon icon top-right of right page */
+    .balloon{
+      position:absolute;
+      right:14px;
+      top:14px;
+      width:58px;
+      height:58px;
+      pointer-events:none;
+      opacity:0.95;
+    }
+
+    /* responsive */
+    @media (max-width:900px){
+      .layout{ grid-template-columns: 1fr; }
+      .preview-wrap{ margin-top:12px; }
+      .card{ height:320px; }
+    }
+    @media (max-width:520px){
+      .card{ height:300px; padding:12px; }
+      .page{ padding:12px; }
+      h2{ font-size:16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap" role="main">
+    <div class="layout">
+      <!-- Left: inputs & actions -->
+      <div class="controls" aria-labelledby="panelTitle">
+        <h2 id="panelTitle">🎉 Birthday Card Helper</h2>
+        <p class="lead">Fill the fields and click Generate. The right side shows the inside of an open birthday card.</p>
+
+        <div class="form-row" aria-labelledby="inputs">
+          <div class="col">
+            <label for="name">Name</label>
+            <input id="name" type="text" placeholder="e.g., Alex" />
+          </div>
+          <div class="col">
+            <label for="age">Age</label>
+            <input id="age" type="number" min="0" placeholder="e.g., 30" />
+          </div>
+          <div class="col">
+            <label for="hobby">Hobby</label>
+            <input id="hobby" type="text" placeholder="e.g., photography" />
+          </div>
+        </div>
+
+        <div class="actions" role="group" aria-label="Actions">
+          <button id="generateBtn">🎈 Generate</button>
+          <button id="regenBtn" class="secondary">🔁 Regenerate</button>
+          <button id="copyBtn" class="secondary">📋 Copy</button>
+          <button id="clearBtn" class="secondary">✖ Clear</button>
+        </div>
+
+        <div class="hint">
+          Tip: leave name blank to use "Friend". Age optional — the card preview will adjust.
+        </div>
+      </div>
+
+      <!-- Right: card preview -->
+      <div class="preview-wrap" aria-live="polite">
+        <div class="card-preview" role="region" aria-label="Card preview">
+          <div class="card" id="cardRoot">
+            <div class="inside">
+              <!-- Left inner page -->
+              <div class="page left" aria-hidden="true">
+                <div style="display:flex;flex-direction:column;">
+                  <div class="big" id="cardLeftBig">Happy Birthday!</div>
+                  <div style="height:8px"></div>
+                  <div class="note">Wishing you a day full of laughter, cake, and all your favourite things.</div>
+                </div>
+                <!-- small decorative confetti -->
+                <svg class="balloon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <defs>
+                    <linearGradient id="g1" x1="0" x2="1">
+                      <stop offset="0" stop-color="#ff5d8f"/>
+                      <stop offset="1" stop-color="#7c3aed"/>
+                    </linearGradient>
+                  </defs>
+                  <path d="M12 2C9.8 2 8 3.8 8 6c0 1 .4 2 1.1 2.7C9.7 9 10 9.6 10 10c0 .6-.4 1-1 1h6c-.6 0-1-.4-1-1 0-.4.3-1 .9-1.3.7-.7 1.1-1.7 1.1-2.7 0-2.2-1.8-4-4-4z" fill="url(#g1)"/>
+                  <path d="M12 14v6" stroke="#f59e0b" stroke-width="1.2" stroke-linecap="round"/>
+                </svg>
+              </div>
+
+              <!-- Right inner page (message area) -->
+              <div class="page right">
+                <div>
+                  <div class="greeting" id="cardGreeting">Happy Birthday, Friend!</div>
+                  <div class="message" id="cardMessage">Your funny message will appear here when you click Generate. It will look like the inside of a birthday card and is ready to copy into a physical card or a message.</div>
+                </div>
+                <div class="signature" id="cardSignature">With love, — Your friend</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div> <!-- end layout -->
+  </div>
+
+  <script>
+    // Templates for the body message (editable & safe)
+    const templates = [
+      (n,a,h) => `${n}, happy ${a ? a + "th " : ""}birthday! 🎂 Keep doing ${h} — it's the perfect excuse to avoid chores and still call it a lifestyle.`,
+      (n,a,h) => `Happy Birthday, ${n}! At ${a || "your current age"}, you finally have the official right to blame everything on ${a ? "your age" : "mysterious wisdom"}. More ${h}, less adulting.`,
+      (n,a,h) => `Yo ${n}! Congrats on turning ${a || "another year fabulous"} — you’re now officially experienced enough to give advice no one asked for. Celebrate with more ${h}!`,
+      (n,a,h) => `Dear ${n}, another year, another grey hair... or just another interesting hat. Either way, keep rocking ${h} and confuse the youth! 🎈`,
+      (n,a,h) => `${n} — rumor has it that doing ${h} on your birthday doubles the fun. Science? Maybe. Worth the try? Definitely. Happy ${a ? a : "birthday"}!`,
+      (n,a,h) => `Happy birthday ${n}! You're now at the perfect age to start lying about your age and blaming it on "vintage charm." Keep ${h} — it suits you.`,
+      (n,a,h) => `Hey ${n}, turning ${a || "one more"} means you’re basically a classic now: rare, valuable, and occasionally requires polishing. Celebrate with ${h} and cake! 🍰`,
+      (n,a,h) => `${n}, congratulations! You're older, wiser (probably), and still a champion at ${h}. Keep training for the gold medal in lazy excellence.`,
+      (n,a,h) => `Happy Birthday ${n}! Age ${a || "unknown"} looks good on you — like a filter that never fails. More ${h} and fewer responsibilities, please.`,
+      (n,a,h) => `To ${n}: If birthdays are like ${h}, then you’re the world champion. Keep being unbeatable. 🎉`
+    ];
+
+    function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+    function sanitizeInput(s){
+      if(!s) return "";
+      return s.trim().replace(/\s+/g,' ').replace(/[<>]/g,'');
+    }
+
+    // Elements
+    const nameEl = document.getElementById('name');
+    const ageEl = document.getElementById('age');
+    const hobbyEl = document.getElementById('hobby');
+
+    const greetingEl = document.getElementById('cardGreeting');
+    const messageEl = document.getElementById('cardMessage');
+    const signatureEl = document.getElementById('cardSignature');
+    const leftBigEl = document.getElementById('cardLeftBig');
+
+    // Generate message and update preview
+    function generateMessage(){
+      const rawName = nameEl.value;
+      const rawAge = ageEl.value;
+      const rawHobby = hobbyEl.value;
+
+      let name = sanitizeInput(rawName) || "Friend";
+      let hobby = sanitizeInput(rawHobby) || "your hobby";
+      let age = null;
+      const ageNum = Number(rawAge);
+      if(!isNaN(ageNum) && rawAge !== "" && ageNum >= 0 && ageNum < 200){
+        age = Math.floor(ageNum);
+      }
+
+      const tpl = pick(templates);
+      const body = tpl(name, age, hobby);
+
+      // Build nicer multi-line card text:
+      const greetText = `Happy Birthday, ${name}${age ? " — " + age : ""}!`;
+      const signature = `With love, — Your friend`;
+
+      greetingEl.textContent = greetText;
+      messageEl.textContent = body;
+      signatureEl.textContent = signature;
+
+      // Slight personalization on left page
+      leftBigEl.textContent = `Happy Birthday${age ? " — " + age : "!"}`;
+
+      return {greetText, body, signature};
+    }
+
+    // Buttons
+    document.getElementById('generateBtn').addEventListener('click', (e)=>{
+      e.preventDefault();
+      generateMessage();
+    });
+    document.getElementById('regenBtn').addEventListener('click', (e)=>{
+      e.preventDefault();
+      generateMessage();
+    });
+    document.getElementById('clearBtn').addEventListener('click', (e)=>{
+      e.preventDefault();
+      nameEl.value = '';
+      ageEl.value = '';
+      hobbyEl.value = '';
+      greetingEl.textContent = 'Happy Birthday, Friend!';
+      messageEl.textContent = 'Your funny message will appear here when you click Generate. It will look like the inside of a birthday card and is ready to copy into a physical card or a message.';
+      signatureEl.textContent = 'With love, — Your friend';
+      leftBigEl.textContent = 'Happy Birthday!';
+    });
+
+    document.getElementById('copyBtn').addEventListener('click', async (e)=>{
+      e.preventDefault();
+      // Copy the card text (greeting + body + signature)
+      const text = `${greetingEl.textContent}\n\n${messageEl.textContent}\n\n${signatureEl.textContent}`;
+      try {
+        await navigator.clipboard.writeText(text);
+        const btn = document.getElementById('copyBtn');
+        btn.textContent = '✅ Copied';
+        setTimeout(()=> btn.textContent = '📋 Copy', 1200);
+      } catch(err){
+        alert('Could not copy automatically. Select the card text and press Ctrl/Cmd+C.');
+      }
+    });
+
+    // Allow Enter to generate
+    [nameEl, ageEl, hobbyEl].forEach(el=>{
+      el.addEventListener('keydown', (ev)=>{
+        if(ev.key === 'Enter'){
+          ev.preventDefault();
+          generateMessage();
+        }
+      });
+    });
+
+    // Initialize with a sample message
+    // (so the preview doesn't look empty on first load)
+    window.addEventListener('load', ()=> {
+      // small delay so layout is ready
+      setTimeout(()=> {
+        greetingEl.textContent = 'Happy Birthday, Friend!';
+        leftBigEl.textContent = 'Happy Birthday!';
+      }, 60);
+    });
+  </script>
+</body>
+</html>
