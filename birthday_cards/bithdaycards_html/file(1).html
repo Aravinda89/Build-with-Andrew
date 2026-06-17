@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Birthday Card Helper — Celebrate!</title>
+  <style>
+    /* FESTIVE COLOR PALETTE */
+    :root{
+      --bg1: #fff0f6;
+      --bg2: #fff7ed;
+      --card:#ffffff;
+      --accent1:#ff5d8f; /* pink */
+      --accent2:#7c3aed; /* purple */
+      --accent3:#f59e0b; /* gold */
+      --muted:#4b5563;
+      --radius:12px;
+      --shadow: 0 8px 30px rgba(20,20,40,0.08);
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+
+    /* Page background */
+    body{
+      margin:0;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background: linear-gradient(135deg, var(--bg1) 0%, var(--bg2) 100%);
+      padding:28px;
+      color:#0f172a;
+    }
+
+    /* Main card */
+    .container{
+      width:100%;
+      max-width:920px;
+      background:var(--card);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:22px;
+      position:relative;
+      overflow:visible;
+    }
+
+    /* Festive hero banner */
+    .hero{
+      display:flex;
+      align-items:center;
+      gap:16px;
+      margin-bottom:14px;
+      padding:14px;
+      border-radius:10px;
+      background: linear-gradient(90deg, rgba(255, 93, 143,0.08), rgba(124,58,237,0.06));
+      position:relative;
+      overflow:visible;
+    }
+
+    .title{
+      font-size:22px;
+      line-height:1.05;
+      margin:0;
+      font-weight:700;
+      background: linear-gradient(90deg, var(--accent1), var(--accent2), var(--accent3));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-shadow: 0 2px 8px rgba(124,58,237,0.08);
+    }
+
+    .subtitle{
+      font-size:13px;
+      color:var(--muted);
+      margin:0;
+    }
+
+    /* Confetti pieces around the header */
+    .confetti{
+      position:absolute;
+      right:14px;
+      top:-10px;
+      pointer-events:none;
+      width:140px;
+      height:120px;
+    }
+    .confetti span{
+      position:absolute;
+      width:10px;
+      height:14px;
+      border-radius:3px;
+      opacity:0.95;
+      transform-origin:center;
+      animation: floatConfetti linear infinite;
+    }
+    /* place and color each piece differently */
+    .c1{ left:10px; top:10px; background:#ff5d8f; animation-duration:2.6s; animation-delay:0s; transform:rotate(10deg);}
+    .c2{ left:30px; top:20px; background:#7c3aed; animation-duration:3.2s; animation-delay:0.2s; transform:rotate(-20deg); }
+    .c3{ left:60px; top:8px;  background:#f59e0b; animation-duration:2.2s; animation-delay:0.4s; transform:rotate(30deg); }
+    .c4{ left:90px; top:18px; background:#06b6d4; animation-duration:2.8s; animation-delay:0.1s; transform:rotate(-10deg);}
+    .c5{ left:110px; top:6px; background:#fb7185; animation-duration:3.4s; animation-delay:0.3s; transform:rotate(18deg);}
+
+    @keyframes floatConfetti {
+      0% { transform: translateY(0) rotate(0deg); opacity:1; }
+      50%{ transform: translateY(-6px) rotate(180deg); opacity:0.9; }
+      100%{ transform: translateY(0) rotate(360deg); opacity:1; }
+    }
+
+    /* Form and controls (kept simple, but with festive accents) */
+    p.lead{
+      margin:0 0 12px 0;
+      color:var(--muted);
+      font-size:14px;
+    }
+    .form-row{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:12px;
+    }
+    label{
+      display:block;
+      font-size:13px;
+      color:#172554;
+      margin-bottom:6px;
+    }
+    input[type="text"], input[type="number"]{
+      padding:10px 12px;
+      border:1px solid #eef2ff;
+      border-radius:10px;
+      font-size:14px;
+      width:100%;
+      box-sizing:border-box;
+      background:linear-gradient(180deg,#ffffff,#fffafd);
+    }
+    .col{
+      flex:1 1 220px;
+      min-width:160px;
+    }
+    .controls{
+      display:flex;
+      gap:10px;
+      margin-top:6px;
+      flex-wrap:wrap;
+    }
+    button{
+      background:linear-gradient(90deg,var(--accent1),var(--accent2));
+      color:white;
+      border:0;
+      padding:10px 14px;
+      border-radius:10px;
+      cursor:pointer;
+      font-weight:700;
+      box-shadow: 0 6px 18px rgba(124,58,237,0.12);
+    }
+    button.secondary{
+      background: linear-gradient(90deg,#fff,#f8fafc);
+      color:#0f172a;
+      box-shadow:none;
+      border:1px solid #e6eef2;
+      font-weight:600;
+    }
+    .output{
+      margin-top:16px;
+      padding:14px;
+      border-radius:10px;
+      background:linear-gradient(180deg,#fff8fb,#fbfffe);
+      border:1px dashed #f1e6ff;
+      min-height:72px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .message{
+      flex:1;
+      font-size:15px;
+      line-height:1.35;
+      color:#0b1220;
+    }
+    .small{
+      font-size:13px;
+      color:var(--muted);
+    }
+    .hint{
+      margin-top:10px;
+      font-size:13px;
+      color:var(--muted);
+    }
+    footer{
+      margin-top:14px;
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    /* Responsive tweaks */
+    @media (max-width:520px){
+      .form-row{ gap:8px; }
+      button{ width:100%; }
+      .controls{ flex-direction:column; }
+      .confetti{ display:none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container" role="main">
+    <div class="hero" aria-hidden="false">
+      <div>
+        <h1 class="title">🎉 Birthday Card Helper — Celebrate!</h1>
+        <p class="subtitle">Enter a name, age and hobby for a funny, festive message you can paste into a card.</p>
+      </div>
+
+      <!-- decorative confetti pieces -->
+      <div class="confetti" aria-hidden="true">
+        <span class="c1"></span>
+        <span class="c2"></span>
+        <span class="c3"></span>
+        <span class="c4"></span>
+        <span class="c5"></span>
+      </div>
+    </div>
+
+    <p class="lead">Type a name, age and a hobby — click Generate to get a funny birthday message. Copy it to paste into your card!</p>
+
+    <div class="form-row" aria-labelledby="inputs">
+      <div class="col">
+        <label for="name">Name</label>
+        <input id="name" type="text" placeholder="e.g., Alex" />
+      </div>
+      <div class="col">
+        <label for="age">Age</label>
+        <input id="age" type="number" min="0" placeholder="e.g., 30" />
+      </div>
+      <div class="col">
+        <label for="hobby">Hobby</label>
+        <input id="hobby" type="text" placeholder="e.g., photography, gardening" />
+      </div>
+    </div>
+
+    <div class="controls" role="group" aria-label="Actions">
+      <button id="generateBtn">🎈 Generate</button>
+      <button id="regenBtn" class="secondary">🔁 Regenerate</button>
+      <button id="copyBtn" class="secondary">📋 Copy</button>
+      <button id="clearBtn" class="secondary">✖ Clear</button>
+    </div>
+
+    <div class="output" aria-live="polite">
+      <div class="message small" id="message">Your funny message will appear here after you click Generate.</div>
+    </div>
+
+    <div class="hint">
+      Tip: Leave name blank to use "Friend". If age is missing the message will skip the age joke.
+    </div>
+
+    <footer>
+      Want a different tone (sweet, formal, silly) or a printable card layout? Tell me and I'll add it.
+    </footer>
+  </div>
+
+  <script>
+    // Message templates (same as before, safe & editable)
+    const templates = [
+      (n,a,h) => `${n}, happy ${a ? a + "th " : ""}birthday! 🎂 Keep doing ${h} — it's the perfect excuse to avoid chores and still call it a lifestyle.`,
+      (n,a,h) => `Happy Birthday, ${n}! At ${a || "your current age"}, you finally have the official right to blame everything on ${a ? "your age" : "mysterious wisdom"}. More ${h}, less adulting.`,
+      (n,a,h) => `Yo ${n}! Congrats on turning ${a || "another year fabulous"} — you’re now officially experienced enough to give advice no one asked for. Celebrate with more ${h}!`,
+      (n,a,h) => `Dear ${n}, another year, another grey hair... or just another interesting hat. Either way, keep rocking ${h} and confuse the youth! 🎈`,
+      (n,a,h) => `${n} — rumor has it that doing ${h} on your birthday doubles the fun. Science? Maybe. Worth the try? Definitely. Happy ${a ? a : "birthday"}!`,
+      (n,a,h) => `Happy birthday ${n}! You're now at the perfect age to start lying about your age and blaming it on "vintage charm." Keep ${h} — it suits you.`,
+      (n,a,h) => `Hey ${n}, turning ${a || "one more"} means you’re basically a classic now: rare, valuable, and occasionally requires polishing. Celebrate with ${h} and cake! 🍰`,
+      (n,a,h) => `${n}, congratulations! You're older, wiser (probably), and still a champion at ${h}. Keep training for the gold medal in lazy excellence.`,
+      (n,a,h) => `Happy Birthday ${n}! Age ${a || "unknown"} looks good on you — like a filter that never fails. More ${h} and fewer responsibilities, please.`,
+      (n,a,h) => `To ${n}: If birthdays are like ${h}, then you’re the world champion. Keep being unbeatable. 🎉`
+    ];
+
+    function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+    function sanitizeInput(s){
+      if(!s) return "";
+      return s.trim().replace(/\s+/g,' ').replace(/[<>]/g,'');
+    }
+
+    function generateMessage(){
+      const rawName = document.getElementById('name').value;
+      const rawAge = document.getElementById('age').value;
+      const rawHobby = document.getElementById('hobby').value;
+
+      let name = sanitizeInput(rawName) || "Friend";
+      let hobby = sanitizeInput(rawHobby) || "your hobby";
+      let age = null;
+
+      const ageNum = Number(rawAge);
+      if(!isNaN(ageNum) && rawAge !== "" && ageNum >= 0 && ageNum < 200){
+        age = Math.floor(ageNum);
+      }
+
+      const tpl = pick(templates);
+      const message = tpl(name, age, hobby);
+
+      document.getElementById('message').textContent = message;
+      return message;
+    }
+
+    document.getElementById('generateBtn').addEventListener('click', (e) => {
+      e.preventDefault();
+      generateMessage();
+    });
+    document.getElementById('regenBtn').addEventListener('click', (e) => {
+      e.preventDefault();
+      generateMessage();
+    });
+
+    document.getElementById('copyBtn').addEventListener('click', async (e) => {
+      e.preventDefault();
+      const text = document.getElementById('message').textContent;
+      try {
+        await navigator.clipboard.writeText(text);
+        const btn = document.getElementById('copyBtn');
+        const old = btn.textContent;
+        btn.textContent = '✅ Copied';
+        setTimeout(()=> btn.textContent = '📋 Copy', 1200);
+      } catch(err){
+        alert('Could not copy automatically. Select the message and press Ctrl/Cmd+C.');
+      }
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', (e) => {
+      e.preventDefault();
+      document.getElementById('name').value = '';
+      document.getElementById('age').value = '';
+      document.getElementById('hobby').value = '';
+      document.getElementById('message').textContent = 'Your funny message will appear here after you click Generate.';
+    });
+
+    ['name','age','hobby'].forEach(id=>{
+      document.getElementById(id).addEventListener('keydown', (ev)=>{
+        if(ev.key === 'Enter') {
+          ev.preventDefault();
+          generateMessage();
+        }
+      });
+    });
+  </script>
+</body>
+</html>
