@@ -1,0 +1,593 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>CardCrafter — Funny Birthday Card Maker</title>
+
+  <!-- Fancy fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Quicksand:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      /* Blue color scheme */
+      --bg1: #f0f6ff;
+      --bg2: #eef7ff;
+      --accent: #0b66e0;        /* deep blue */
+      --accent-2: #4fb3ff;      /* light blue */
+      --card-paper: #ffffff;
+      --card-edge: #e6f0ff;
+      --text: #0f2540;
+      --muted: #5b6b85;
+      --good: #1fb6ff;          /* blue for lucky button */
+      --glass: rgba(255,255,255,0.65);
+    }
+
+    /* Page basics */
+    html,body{ height:100%; margin:0; box-sizing:border-box; }
+    body{
+      font-family: "Quicksand", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      color:var(--text);
+      background:
+        radial-gradient(circle at 10% 10%, rgba(11,102,224,0.06), transparent 15%),
+        radial-gradient(circle at 90% 90%, rgba(79,179,255,0.04), transparent 15%),
+        linear-gradient(120deg,var(--bg1), var(--bg2));
+      padding:28px;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+
+    /* Fancy header */
+    header{
+      text-align:center;
+      margin-bottom:18px;
+    }
+    .title-wrap{
+      display:inline-block;
+      padding:6px 18px;
+      border-radius:999px;
+      background: linear-gradient(90deg, rgba(255,255,255,0.6), rgba(245,252,255,0.6));
+      border:1px solid rgba(11,102,224,0.06);
+      box-shadow: 0 6px 18px rgba(11,102,224,0.03);
+    }
+    h1{
+      margin:0;
+      font-family: "Playfair Display", serif;
+      font-weight:900;
+      font-size:40px;
+      line-height:1;
+      background: linear-gradient(90deg, #0b66e0, #4fb3ff, #8fe7ff);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-shadow: 0 6px 18px rgba(11,102,224,0.04);
+      letter-spacing: -0.5px;
+    }
+    p.lead{
+      margin:8px 0 0;
+      font-size:15px;
+      color:var(--muted);
+      font-style:italic;
+      opacity:0.95;
+    }
+
+    /* Main layout */
+    .main{
+      display:flex;
+      gap:20px;
+      align-items:flex-start;
+      max-width:1100px;
+      margin:12px auto 80px;
+    }
+
+    .controls{
+      width:380px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.88), rgba(245,252,255,0.88));
+      border-radius:14px;
+      padding:20px;
+      box-shadow: 0 8px 28px rgba(11,102,224,0.03);
+      border:1px solid rgba(11,102,224,0.035);
+    }
+    .controls h2{
+      margin:0 0 6px 0;
+      color:var(--accent-2);
+      font-weight:700;
+      font-size:18px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .controls .subtitle{
+      margin:4px 0 12px;
+      font-size:13px;
+      color:var(--muted);
+    }
+
+    label{
+      display:block;
+      font-size:13px;
+      margin-top:12px;
+      color:var(--muted);
+    }
+    input[type="text"], input[type="number"], select{
+      width:100%;
+      padding:10px 12px;
+      margin-top:6px;
+      border-radius:8px;
+      border:1px solid rgba(11,102,224,0.08);
+      font-size:14px;
+      background:white;
+      box-sizing:border-box;
+      color:var(--text);
+    }
+
+    .buttons{
+      display:flex;
+      gap:8px;
+      margin-top:14px;
+      flex-wrap:wrap;
+    }
+    button{
+      padding:10px 12px;
+      border-radius:10px;
+      border:0;
+      cursor:pointer;
+      font-weight:700;
+      color:white;
+      font-size:13px;
+    }
+    .btn-go{ background: linear-gradient(90deg,#0b66e0, #2f9cff); }
+    .btn-clear{ background:#4b82ff; }
+    .btn-reset{ background:#6b7280; }
+    .btn-lucky{ background: linear-gradient(90deg,#7fe7ff, var(--good)); color:#05314a; }
+
+    .hint{
+      margin-top:10px;
+      font-size:13px;
+      color:var(--muted);
+    }
+
+    /* Cards column */
+    .cards-column{
+      flex:1;
+      min-height:200px;
+      display:flex;
+      flex-direction:column;
+      align-items:flex-end;
+    }
+    .stack{
+      width:480px;
+      display:flex;
+      flex-direction:column;
+      align-items:flex-end;
+      gap:14px;
+    }
+
+    /* Card look: inside of a card */
+    .card {
+      width:480px;
+      border-radius:12px;
+      background: linear-gradient(180deg,var(--card-paper), #fbfdff);
+      border:1px solid var(--card-edge);
+      box-shadow: 0 14px 40px rgba(11,102,224,0.06);
+      overflow:visible;
+      position:relative;
+      padding:16px;
+      display:flex;
+      align-items:stretch;
+    }
+    .card::before{
+      content:"";
+      position:absolute;
+      left:50%;
+      top:12px;
+      bottom:12px;
+      width:2px;
+      background: linear-gradient(180deg, rgba(11,102,224,0.03), rgba(79,179,255,0.02));
+      transform:translateX(-50%);
+      border-radius:2px;
+    }
+    .left-panel, .right-panel{
+      width:50%;
+      padding:12px 14px;
+      box-sizing:border-box;
+    }
+    .left-panel{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border-right: 1px dashed rgba(11,102,224,0.04);
+    }
+    .decor{
+      text-align:center;
+      color:var(--accent);
+      font-size:20px;
+      font-weight:800;
+      letter-spacing:1px;
+      font-family: "Playfair Display", serif;
+    }
+    .balloons{
+      font-size:36px;
+      margin-top:8px;
+      opacity:0.95;
+    }
+    .right-panel{
+      padding-left:22px;
+      color:var(--text);
+      position:relative;
+    }
+    .message{
+      font-size:16px;
+      line-height:1.45;
+      white-space:pre-wrap;
+      min-height:68px;
+    }
+    .signature{
+      margin-top:12px;
+      text-align:right;
+      font-weight:700;
+      color:var(--muted);
+      font-size:13px;
+    }
+    .meta{
+      margin-top:8px;
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    /* small toolbar with copy button */
+    .card-toolbar{
+      position:absolute;
+      right:12px;
+      top:10px;
+      display:flex;
+      gap:8px;
+      align-items:center;
+    }
+    .copy-btn{
+      background: linear-gradient(90deg,#c7f2ff,#5ec7ff);
+      border:0;
+      padding:8px 10px;
+      border-radius:8px;
+      color:#042433;
+      font-weight:800;
+      cursor:pointer;
+      font-size:13px;
+      box-shadow: 0 6px 12px rgba(31,182,255,0.08);
+    }
+    .copy-btn[aria-busy="true"]{
+      opacity:0.8;
+    }
+
+    /* hover lift */
+    .stack .card{
+      transition: transform .15s ease, box-shadow .15s ease;
+    }
+    .stack .card:hover{
+      transform: translateY(-6px);
+      box-shadow: 0 20px 48px rgba(11,102,224,0.09);
+    }
+
+    /* Responsive */
+    @media (max-width:980px){
+      .main{ flex-direction:column; align-items:center; gap:18px; }
+      .controls{ width:100%; max-width:540px; }
+      .stack{ width:100%; max-width:540px; align-items:center; }
+      .cards-column{ align-items:center; }
+      .card{ width:100%; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="title-wrap" role="banner">
+      <h1>CardCrafter ✨ The Birthday Bard</h1>
+    </div>
+    <p class="lead">Whip up a whimsical inside-card message — fill five fields or get lucky. Each card looks like the inside of a folded card.</p>
+  </header>
+
+  <div class="main">
+    <div class="controls" aria-label="Card controls">
+      <h2>Compose a playful message</h2>
+      <div class="subtitle">Enter the five prompts, pick a tone, or click "I'm feeling lucky".</div>
+
+      <label for="name">Name</label>
+      <input id="name" type="text" placeholder="e.g. Alex" />
+
+      <label for="age">Age</label>
+      <input id="age" type="number" min="0" placeholder="e.g. 29" />
+
+      <label for="hobby">Hobby</label>
+      <input id="hobby" type="text" placeholder="e.g. gardening" />
+
+      <label for="adjective">Adjective</label>
+      <input id="adjective" type="text" placeholder="e.g. marvelous" />
+
+      <label for="plural">Plural Noun</label>
+      <input id="plural" type="text" placeholder="e.g. cupcakes" />
+
+      <label for="tone">Tone (quick pick)</label>
+      <select id="tone">
+        <option value="silly">Silly</option>
+        <option value="sarcastic">Playful / Sarcastic</option>
+        <option value="sweet">Sweet & funny</option>
+      </select>
+
+      <div class="buttons">
+        <button id="lucky" class="btn-lucky" type="button">I'm feeling lucky</button>
+        <button id="generate" class="btn-go" type="button">Generate Card</button>
+        <button id="clear" class="btn-clear" type="button">Clear Inputs</button>
+        <button id="reset" class="btn-reset" type="button">Clear All Cards</button>
+      </div>
+
+      <div class="hint">
+        Tip: After generating, use the blue "Copy" button on a card to copy its text for pasting into a real card or message.
+      </div>
+    </div>
+
+    <div class="cards-column" aria-live="polite">
+      <div class="stack" id="stack">
+        <!-- Cards inserted here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Announce copy results for screen readers -->
+  <div id="sr-announcer" aria-live="polite" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;"></div>
+
+  <script>
+    /* Simple JS:
+       - Builds funny card text from five inputs + tone
+       - "I'm feeling lucky" fills with predefined silly choices
+       - Generate adds a card to the top of the stack
+       - Copy button on each card copies the message text to the clipboard
+    */
+
+    function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+    function randInt(min, max){ return Math.floor(Math.random()*(max-min+1))+min; }
+    function escapeHtml(s){
+      if (!s && s !== 0) return "";
+      return String(s)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;");
+    }
+    function ordinal(n){
+      if(!n && n !== 0) return "";
+      const num = Number(n);
+      if (Number.isNaN(num)) return n;
+      const mod100 = num % 100;
+      if (mod100 >= 11 && mod100 <= 13) return num + "th";
+      switch (num % 10) {
+        case 1: return num + "st";
+        case 2: return num + "nd";
+        case 3: return num + "rd";
+        default: return num + "th";
+      }
+    }
+
+    // Funny / sample data
+    const funnyNames = ["Bubbles","Captain Giggles","Sparky","Professor Sprinkle","Muffin","Zigzag","Pickles","Turbo","Pudding","Noodle"];
+    const funnyHobbies = ["extreme napping","competitive sock-pairing","urban gardening","meme archaeology","backyard kite juggling","cupcake sculpting","moonwalking"];
+    const funnyAdjectives = ["ridonkulous","spectacularly odd","glittery","absurdly charming","sneakily brilliant","delightfully suspicious","crisply heroic"];
+    const funnyPlurals = ["rubber ducks","mismatched socks","tiny hats","leftover tacos","emoji collections","mystery stickers","unread notifications"];
+
+    const sampleNames = ["Alex","Sam","Jordan","Taylor","Jamie","Casey"];
+    const sampleHobbies = ["baking","gardening","gaming","knitting","kayaking","photography"];
+    const sampleAdjectives = ["marvelous","quirky","legendary","sparkly","brilliant","cheeky"];
+    const samplePlurals = ["cupcakes","trophies","socks","selfies","puns","stickers"];
+
+    const sillyLines = [
+      "May your cake be as big as your hobby-induced mess!",
+      "Another year older, still too young to stop showing off your moves.",
+      "You're a masterpiece — slightly sticky in places, but a masterpiece.",
+      "If birthdays were apps, you'd be 'Premium Vintage' now.",
+      "May your power naps be long and your celebrations louder."
+    ];
+    const sarcasticLines = [
+      "Age is the price we pay for experience... and more candles.",
+      "Congrats — you've successfully avoided becoming a cautionary tale.",
+      "Don't worry about the wrinkles. They're just laugh-topography.",
+      "Older? Sure. Wiser? Up for debate. Funny? Absolutely."
+    ];
+    const sweetLines = [
+      "Hope your day is full of cake, giggles and everything you love.",
+      "Here's to more days chasing what makes you smile.",
+      "Wishing you extra sprinkles and extra hugs today.",
+      "May your year be as joyful as your favorite hobby."
+    ];
+
+    const templates = [
+      (n,a,h,adj,pl) => `Hey ${n}! ${a ? ordinal(a) : "Happy Birthday"}! Your ${adj} ${pl} and your ${h} are the perfect combo — chaos with style.`,
+      (n,a,h,adj,pl) => `Happy ${a ? ordinal(a) : "birthday"}, ${n}! At this age, every ${pl} you collect becomes a story. Keep being ${adj} and loud about it.`,
+      (n,a,h,adj,pl) => `${n}! ${a ? ordinal(a) : "Congrats"} — you're now officially ${adj}. Time to celebrate with ${pl} and an extra helping of ${h}.`,
+      (n,a,h,adj,pl) => `To ${n} on their ${a ? ordinal(a) : "special day"}: may your ${h} sessions be long and your ${pl} be plentiful. Stay ${adj}!`,
+      (n,a,h,adj,pl) => `Happy birthday, ${n}! ${a ? ordinal(a) : ""} years of being ${adj}, mastering ${h}, and collecting ${pl} like a pro.`
+    ];
+
+    // DOM
+    const nameInput = document.getElementById('name');
+    const ageInput = document.getElementById('age');
+    const hobbyInput = document.getElementById('hobby');
+    const adjInput = document.getElementById('adjective');
+    const pluralInput = document.getElementById('plural');
+    const toneInput = document.getElementById('tone');
+    const luckyBtn = document.getElementById('lucky');
+    const generateBtn = document.getElementById('generate');
+    const clearBtn = document.getElementById('clear');
+    const resetBtn = document.getElementById('reset');
+    const stack = document.getElementById('stack');
+    const srAnnouncer = document.getElementById('sr-announcer');
+
+    function buildMessage(name, age, hobby, adj, plural, tone){
+      const n = name || pick(sampleNames);
+      const a = age || "";
+      const h = hobby || pick(sampleHobbies);
+      const ad = adj || pick(sampleAdjectives);
+      const pl = plural || pick(samplePlurals);
+
+      const base = pick(templates)(n,a,h,ad,pl);
+
+      let toneLine = "";
+      if(tone === 'silly'){
+        toneLine = pick(sillyLines);
+      } else if(tone === 'sarcastic'){
+        toneLine = pick(sarcasticLines);
+      } else {
+        toneLine = pick(sweetLines);
+      }
+
+      const signOff = `Cheers,\nYour friendly card bot`;
+      return `${base}\n\n${toneLine}\n\n${signOff}`;
+    }
+
+    function addCardToStack(name, age, hobby, adj, plural, tone){
+      const now = new Date();
+      const time = now.toLocaleString();
+      const message = buildMessage(name, age, hobby, adj, plural, tone);
+
+      const escName = escapeHtml(name || "");
+      const escAge = escapeHtml(age || "");
+      const escHobby = escapeHtml(hobby || "");
+      const escAdj = escapeHtml(adj || "");
+      const escPlural = escapeHtml(plural || "");
+      const escMsg = escapeHtml(message);
+
+      const cardHtml = `
+        <div class="card" role="article" aria-label="Birthday card for ${escName || 'Friend'}">
+          <div class="card-toolbar">
+            <button class="copy-btn" type="button" title="Copy card text">Copy</button>
+          </div>
+
+          <div class="left-panel" aria-hidden="true">
+            <div>
+              <div class="decor">Happy Birthday!</div>
+              <div class="balloons">🎈🎉🎂</div>
+            </div>
+          </div>
+
+          <div class="right-panel">
+            <div class="message">${escMsg}</div>
+            <div class="signature">— From your pal</div>
+            <div class="meta">
+              For: ${escName || 'Someone special'}${escAge ? ' • Age: '+escAge : ''}${escHobby ? ' • Hobby: '+escHobby : ''}${escAdj ? ' • Adjective: '+escAdj : ''}${escPlural ? ' • Plural: '+escPlural : ''} • ${time}
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Newest on top
+      stack.insertAdjacentHTML('afterbegin', cardHtml);
+    }
+
+    // Lucky fills with funny choices
+    luckyBtn.addEventListener('click', () => {
+      const sillyAges = [7,13,21,29,30,42,69,99];
+      const age = Math.random() < 0.2 ? pick(sillyAges) : randInt(18, 80);
+
+      nameInput.value = pick(funnyNames);
+      ageInput.value = age;
+      hobbyInput.value = pick(funnyHobbies);
+      adjInput.value = pick(funnyAdjectives);
+      pluralInput.value = pick(funnyPlurals);
+      toneInput.value = pick(['silly','sarcastic','sweet']);
+
+      generateBtn.focus();
+    });
+
+    generateBtn.addEventListener('click', () => {
+      const name = nameInput.value.trim();
+      const age = ageInput.value.trim();
+      const hobby = hobbyInput.value.trim();
+      const adj = adjInput.value.trim();
+      const plural = pluralInput.value.trim();
+      const tone = toneInput.value;
+
+      addCardToStack(name, age, hobby, adj, plural, tone);
+    });
+
+    clearBtn.addEventListener('click', () => {
+      nameInput.value = '';
+      ageInput.value = '';
+      hobbyInput.value = '';
+      adjInput.value = '';
+      pluralInput.value = '';
+      toneInput.value = 'silly';
+      nameInput.focus();
+    });
+
+    resetBtn.addEventListener('click', () => {
+      if(confirm("Remove all generated cards?")) {
+        stack.innerHTML = "";
+      }
+    });
+
+    [nameInput, ageInput, hobbyInput, adjInput, pluralInput].forEach(input =>{
+      input.addEventListener('keydown', (e)=>{
+        if(e.key === 'Enter'){
+          generateBtn.click();
+        }
+      });
+    });
+
+    // Copy button delegation
+    stack.addEventListener('click', async (e) => {
+      const btn = e.target.closest('.copy-btn');
+      if (!btn) return;
+
+      const card = btn.closest('.card');
+      if (!card) return;
+
+      const msgEl = card.querySelector('.message');
+      if (!msgEl) return;
+
+      const textToCopy = msgEl.innerText.trim();
+      if (!textToCopy) return;
+
+      const originalText = btn.textContent;
+      btn.setAttribute('aria-busy', 'true');
+      btn.textContent = 'Copying...';
+
+      let success = false;
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(textToCopy);
+        } else {
+          const ta = document.createElement('textarea');
+          ta.value = textToCopy;
+          ta.style.position = 'fixed';
+          ta.style.left = '-9999px';
+          document.body.appendChild(ta);
+          ta.select();
+          const ok = document.execCommand('copy');
+          document.body.removeChild(ta);
+          if (!ok) throw new Error('execCommand failed');
+        }
+        success = true;
+      } catch (err) {
+        console.warn('Copy failed', err);
+        success = false;
+      }
+
+      if (success) {
+        btn.textContent = 'Copied!';
+        srAnnouncer.textContent = 'Card copied to clipboard';
+      } else {
+        btn.textContent = 'Copy failed';
+        srAnnouncer.textContent = 'Failed to copy card';
+      }
+
+      setTimeout(() => {
+        btn.removeAttribute('aria-busy');
+        btn.textContent = originalText;
+        srAnnouncer.textContent = '';
+      }, 1600);
+    });
+
+    // Example card
+    window.addEventListener('load', () => {
+      addCardToStack("Friend", "30", "celebrating", "marvelous", "cupcakes", "silly");
+    });
+  </script>
+</body>
+</html>
