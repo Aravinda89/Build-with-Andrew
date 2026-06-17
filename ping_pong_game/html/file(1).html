@@ -1,0 +1,520 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Simple Pong with Difficulty & Win Score</title>
+  <style>
+    :root{
+      --bg:#0b1220;
+      --panel: rgba(255,255,255,0.04);
+      --accent: #cfe9ff;
+      --text: #e6f0ff;
+    }
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background: linear-gradient(180deg, #041025 0%, #061222 100%);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .container {
+      width: 960px;
+      max-width: calc(100% - 40px);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: center;
+    }
+
+    /* Top controls */
+    .top-bar {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    .controls {
+      background: var(--panel);
+      padding: 10px 12px;
+      border-radius: 8px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .controls label {
+      font-size: 14px;
+      color: var(--text);
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .controls input[type="number"] {
+      width: 64px;
+      padding: 6px 8px;
+      border-radius: 6px;
+      border: none;
+      background: rgba(255,255,255,0.03);
+      color: var(--text);
+    }
+    .controls button {
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: none;
+      background: #1c8cff;
+      color: white;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .controls button:active { transform: translateY(1px); }
+
+    .instructions {
+      font-size: 13px;
+      color: rgba(230,240,255,0.9);
+      background: rgba(255,255,255,0.02);
+      padding: 8px 12px;
+      border-radius: 8px;
+    }
+
+    /* Canvas */
+    .canvas-wrap {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+    }
+    canvas {
+      background: linear-gradient(#06203b, #02111a);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+      border-radius: 8px;
+      max-width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* Bottom scoreboard */
+    .bottom-bar {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    .scoreboard {
+      background: var(--panel);
+      padding: 10px 14px;
+      border-radius: 8px;
+      display: flex;
+      gap: 18px;
+      align-items: center;
+      min-width: 260px;
+      justify-content: center;
+    }
+    .score {
+      text-align: center;
+    }
+    .score .who {
+      font-size: 12px;
+      color: rgba(230,240,255,0.8);
+    }
+    .score .val {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-top: 4px;
+    }
+    .status {
+      background: var(--panel);
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 14px;
+      color: rgba(230,240,255,0.95);
+    }
+
+    /* Responsive tweaks */
+    @media (max-width: 520px) {
+      .top-bar { flex-direction: column; align-items: stretch; }
+      .bottom-bar { flex-direction: column; align-items: stretch; }
+      .controls { width: 100%; justify-content: space-between; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="top-bar">
+      <div class="controls" id="controls">
+        <label>
+          Difficulty:
+          <select id="difficulty" title="Choose difficulty">
+            <option value="easy">Easy</option>
+            <option value="medium" selected>Medium</option>
+            <option value="hard">Hard</option>
+          </select>
+        </label>
+
+        <label>
+          Points to win:
+          <input id="winScoreInput" type="number" min="1" max="50" value="5" />
+        </label>
+
+        <button id="applyBtn">Apply & Restart</button>
+      </div>
+
+      <div class="instructions">
+        Use Up/Down arrows or W/S to move. Press Space to restart after a win.
+      </div>
+    </div>
+
+    <div class="canvas-wrap">
+      <canvas id="game" width="900" height="500"></canvas>
+    </div>
+
+    <div class="bottom-bar">
+      <div class="scoreboard">
+        <div class="score">
+          <div class="who">You</div>
+          <div class="val" id="playerScoreDisplay">0</div>
+        </div>
+        <div class="score">
+          <div class="who">Computer</div>
+          <div class="val" id="compScoreDisplay">0</div>
+        </div>
+      </div>
+
+      <div class="status" id="statusDisplay">First to 5 points wins.</div>
+    </div>
+  </div>
+
+  <script>
+    // DOM elements
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+    const difficultyEl = document.getElementById('difficulty');
+    const winScoreInput = document.getElementById('winScoreInput');
+    const applyBtn = document.getElementById('applyBtn');
+    const playerScoreDisplay = document.getElementById('playerScoreDisplay');
+    const compScoreDisplay = document.getElementById('compScoreDisplay');
+    const statusDisplay = document.getElementById('statusDisplay');
+
+    // Visual / gameplay constants
+    const PADDLE_WIDTH = 14;
+    const PADDLE_HEIGHT = 90;
+    const PADDLE_SPEED = 6;       // player's paddle speed
+    const BALL_RADIUS = 8;
+
+    // Configurable game params that change with difficulty
+    let COMP_SPEED = 4.0;        // will be changed by difficulty
+    let COMP_ERROR = 20;         // range in px the computer can 'miss' (higher -> easier)
+    let WIN_SCORE = parseInt(winScoreInput.value, 10) || 5;
+
+    // State
+    let playerScore = 0;
+    let compScore = 0;
+    let running = true;
+    let gameOver = false;
+
+    // Player paddle (left)
+    const player = {
+      x: 20,
+      y: (canvas.height - PADDLE_HEIGHT) / 2,
+      width: PADDLE_WIDTH,
+      height: PADDLE_HEIGHT
+    };
+
+    // Computer paddle (right)
+    const comp = {
+      x: canvas.width - 20 - PADDLE_WIDTH,
+      y: (canvas.height - PADDLE_HEIGHT) / 2,
+      width: PADDLE_WIDTH,
+      height: PADDLE_HEIGHT
+    };
+
+    // Ball
+    const ball = {
+      x: canvas.width / 2,
+      y: canvas.height / 2,
+      vx: 0,
+      vy: 0,
+      speed: 5
+    };
+
+    // Keyboard
+    const keys = { ArrowUp:false, ArrowDown:false, KeyW:false, KeyS:false };
+
+    // Initialize difficulty settings
+    function applyDifficulty(level) {
+      if (level === 'easy') {
+        COMP_SPEED = 3.0;
+        COMP_ERROR = 40;
+        ball.speed = 4.8;
+      } else if (level === 'medium') {
+        COMP_SPEED = 4.2;
+        COMP_ERROR = 20;
+        ball.speed = 5.0;
+      } else { // hard
+        COMP_SPEED = 5.6;
+        COMP_ERROR = 6;
+        ball.speed = 5.4;
+      }
+    }
+
+    // Reset ball and serve toward a direction optionally
+    function resetBall(toPlayer = null) {
+      ball.x = canvas.width / 2;
+      ball.y = canvas.height / 2;
+      // keep ball speed baseline depending on difficulty but adjust slightly
+      // (ball.speed may increase during play)
+      ball.speed = (difficultyEl.value === 'easy') ? 4.8 : (difficultyEl.value === 'hard' ? 5.4 : 5.0);
+
+      let angle = (Math.random() * Math.PI/3) - (Math.PI/6); // -30 to +30 degrees
+      let dir;
+      if (toPlayer === true) dir = -1;
+      else if (toPlayer === false) dir = 1;
+      else dir = Math.random() < 0.5 ? -1 : 1;
+
+      ball.vx = dir * ball.speed * Math.cos(angle);
+      ball.vy = ball.speed * Math.sin(angle);
+    }
+
+    // Collision check
+    function collideBallPaddle(b, p) {
+      return b.x - BALL_RADIUS < p.x + p.width &&
+             b.x + BALL_RADIUS > p.x &&
+             b.y - BALL_RADIUS < p.y + p.height &&
+             b.y + BALL_RADIUS > p.y;
+    }
+
+    // Draw helpers
+    function drawNet() {
+      const netWidth = 4;
+      const seg = 16;
+      ctx.fillStyle = 'rgba(255,255,255,0.12)';
+      for (let y = 10; y < canvas.height; y += seg + 8) {
+        ctx.fillRect(canvas.width / 2 - netWidth/2, y, netWidth, seg);
+      }
+    }
+
+    function roundRect(ctx, x, y, w, h, r) {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.arcTo(x + w, y, x + w, y + h, r);
+      ctx.arcTo(x + w, y + h, x, y + h, r);
+      ctx.arcTo(x, y + h, x, y, r);
+      ctx.arcTo(x, y, x + w, y, r);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    function draw() {
+      // Clear
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+
+      // Draw net
+      drawNet();
+
+      // Paddles
+      ctx.fillStyle = '#cfe9ff';
+      roundRect(ctx, player.x, player.y, player.width, player.height, 6);
+      roundRect(ctx, comp.x, comp.y, comp.width, comp.height, 6);
+
+      // Ball
+      ctx.beginPath();
+      ctx.fillStyle = '#fff';
+      ctx.arc(ball.x, ball.y, BALL_RADIUS, 0, Math.PI*2);
+      ctx.fill();
+
+      // If game over show message inside canvas too
+      if (gameOver) {
+        ctx.fillStyle = 'rgba(0,0,0,0.55)';
+        ctx.fillRect(canvas.width/2 - 260, canvas.height/2 - 60, 520, 120);
+        ctx.fillStyle = '#fff';
+        ctx.font = '28px system-ui, Arial';
+        ctx.textAlign = 'center';
+        const winner = playerScore > compScore ? 'You win!' : 'Computer wins';
+        ctx.fillText(winner, canvas.width/2, canvas.height/2 - 6);
+        ctx.font = '16px system-ui, Arial';
+        ctx.fillText('Press Space or Apply & Restart to play again', canvas.width/2, canvas.height/2 + 28);
+      }
+    }
+
+    // Update bottom UI (scores & status)
+    function updateHUD() {
+      playerScoreDisplay.textContent = playerScore;
+      compScoreDisplay.textContent = compScore;
+      if (!gameOver) {
+        statusDisplay.textContent = `First to ${WIN_SCORE} point${WIN_SCORE===1?'':'s'} wins. Difficulty: ${capitalize(difficultyEl.value)}.`;
+      } else {
+        const winner = playerScore > compScore ? 'You win! 🎉' : 'Computer wins';
+        statusDisplay.textContent = `${winner} (First to ${WIN_SCORE}). Press Space or Apply & Restart.`;
+      }
+    }
+
+    // Game update logic
+    function update() {
+      if (!running) return;
+
+      // Move player paddle based on keys
+      let move = 0;
+      if (keys.ArrowUp || keys.KeyW) move -= 1;
+      if (keys.ArrowDown || keys.KeyS) move += 1;
+      player.y += move * PADDLE_SPEED;
+      // Clamp
+      if (player.y < 0) player.y = 0;
+      if (player.y + player.height > canvas.height) player.y = canvas.height - player.height;
+
+      // Computer AI: track ball with some error/inaccuracy
+      // targetY is (ball.y - half paddle), plus a random offset based on COMP_ERROR to simulate mistakes
+      const desiredCenter = ball.y + compErrorOffset();
+      const targetY = desiredCenter - comp.height / 2;
+      const dy = targetY - comp.y;
+      if (Math.abs(dy) > 4) {
+        comp.y += Math.sign(dy) * Math.min(COMP_SPEED, Math.abs(dy));
+      } else {
+        comp.y = targetY;
+      }
+      // Clamp
+      if (comp.y < 0) comp.y = 0;
+      if (comp.y + comp.height > canvas.height) comp.y = canvas.height - comp.height;
+
+      // Move ball
+      ball.x += ball.vx;
+      ball.y += ball.vy;
+
+      // Top/bottom walls
+      if (ball.y - BALL_RADIUS < 0) {
+        ball.y = BALL_RADIUS;
+        ball.vy = -ball.vy;
+      } else if (ball.y + BALL_RADIUS > canvas.height) {
+        ball.y = canvas.height - BALL_RADIUS;
+        ball.vy = -ball.vy;
+      }
+
+      // Paddles collision
+      if (collideBallPaddle(ball, player)) {
+        ball.x = player.x + player.width + BALL_RADIUS;
+        const relativeY = (ball.y - (player.y + player.height/2));
+        const norm = relativeY / (player.height/2);
+        const maxBounce = Math.PI / 3; // 60 degrees
+        const angle = norm * maxBounce;
+        const speedIncrease = 0.5;
+        ball.speed += speedIncrease;
+        ball.vx = Math.cos(angle) * ball.speed;
+        ball.vy = Math.sin(angle) * ball.speed;
+      } else if (collideBallPaddle(ball, comp)) {
+        ball.x = comp.x - BALL_RADIUS;
+        const relativeY = (ball.y - (comp.y + comp.height/2));
+        const norm = relativeY / (comp.height/2);
+        const maxBounce = Math.PI / 3;
+        const angle = norm * maxBounce;
+        const speedIncrease = 0.5;
+        ball.speed += speedIncrease;
+        ball.vx = -Math.cos(angle) * ball.speed;
+        ball.vy = Math.sin(angle) * ball.speed;
+      }
+
+      // Left and right out-of-bounds: scoring
+      if (ball.x - BALL_RADIUS < 0) {
+        // computer scores
+        compScore++;
+        if (compScore >= WIN_SCORE) {
+          gameOver = true;
+          running = false;
+        }
+        resetBall(false);
+      } else if (ball.x + BALL_RADIUS > canvas.width) {
+        // player scores
+        playerScore++;
+        if (playerScore >= WIN_SCORE) {
+          gameOver = true;
+          running = false;
+        }
+        resetBall(true);
+      }
+    }
+
+    // Computer error offset generator:
+    // small jitter that's recomputed occasionally so AI doesn't instantly correct perfectly.
+    let lastErrorRecomputeAt = 0;
+    let currentErrorOffset = 0;
+    function compErrorOffset() {
+      // recompute sometimes (every 200ms approx)
+      const now = performance.now();
+      if (now - lastErrorRecomputeAt > 180) {
+        lastErrorRecomputeAt = now;
+        // random offset in [-COMP_ERROR, COMP_ERROR], smaller when ball far away
+        const distanceFactor = Math.min(1, Math.abs(ball.x - comp.x) / (canvas.width / 2));
+        const maxOff = COMP_ERROR * (1 - 0.35 * distanceFactor); // slightly better when ball nearer
+        currentErrorOffset = (Math.random() * 2 - 1) * maxOff;
+      }
+      return currentErrorOffset;
+    }
+
+    // Game loop
+    function loop() {
+      update();
+      draw();
+      updateHUD();
+      requestAnimationFrame(loop);
+    }
+
+    // Controls
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        if (gameOver) {
+          playerScore = 0;
+          compScore = 0;
+          gameOver = false;
+          running = true;
+          resetBall();
+        }
+        e.preventDefault();
+        return;
+      }
+      if (e.code in keys) {
+        keys[e.code] = true;
+      }
+    });
+    window.addEventListener('keyup', (e) => {
+      if (e.code in keys) {
+        keys[e.code] = false;
+      }
+    });
+
+    // Helper
+    function capitalize(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+
+    // Apply button behavior
+    applyBtn.addEventListener('click', () => {
+      // read and validate win score
+      const val = parseInt(winScoreInput.value, 10);
+      if (!Number.isFinite(val) || val < 1) {
+        alert('Please enter a valid number (1 or greater) for points to win.');
+        return;
+      }
+      WIN_SCORE = val;
+      // apply difficulty settings
+      applyDifficulty(difficultyEl.value);
+      // reset scores and state
+      playerScore = 0;
+      compScore = 0;
+      running = true;
+      gameOver = false;
+      resetBall();
+    });
+
+    // Initialize default difficulty and start
+    applyDifficulty(difficultyEl.value);
+    resetBall();
+    updateHUD();
+    loop();
+
+    // Expose for debugging (optional)
+    window._pong = {
+      resetBall, applyDifficulty
+    };
+  </script>
+</body>
+</html>
