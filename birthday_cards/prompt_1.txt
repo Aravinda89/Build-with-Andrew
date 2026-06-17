@@ -1,0 +1,7 @@
+Create a web page to help me write birthday cards where I can give a person's name, age and hobby and it gives me back a funny message. 
+
+Add a festive title and colors. 
+
+Display the card on the right side, and make it look like the inside of a birthday card. 
+
+Add a fun title at the top of the page. And instead of replacing the old cards, keep them visible and stack them underneath the new ones. 
