@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>CardCrafter — Funny Birthday Card Maker</title>
+  <style>
+    :root{
+      --bg1: #fff7f0;
+      --bg2: #fff1ff;
+      --accent: #ff6b6b;
+      --accent-2: #ffb86b;
+      --card-paper: #fffefc;
+      --card-edge: #f1e9e7;
+      --text: #333;
+      --muted: #666;
+      --good: #2db84c;
+    }
+    html,body{
+      height:100%;
+      margin:0;
+      font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: radial-gradient(circle at 10% 10%, rgba(255,235,238,0.6), transparent 15%),
+                  radial-gradient(circle at 90% 90%, rgba(232,240,255,0.6), transparent 15%),
+                  linear-gradient(120deg,var(--bg1), var(--bg2));
+      color:var(--text);
+      padding:24px;
+      box-sizing:border-box;
+    }
+
+    header{
+      text-align:center;
+      margin-bottom:18px;
+    }
+    header h1{
+      margin:0;
+      font-size:28px;
+      letter-spacing:1px;
+      color:var(--accent);
+    }
+    header p{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    .main{
+      display:flex;
+      gap:20px;
+      align-items:flex-start;
+      max-width:1000px;
+      margin:0 auto;
+    }
+
+    .controls{
+      width:360px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,250,245,0.9));
+      border-radius:12px;
+      padding:18px;
+      box-shadow: 0 6px 18px rgba(20,20,30,0.08);
+      border:1px solid rgba(0,0,0,0.03);
+    }
+    .controls h2{
+      margin:0 0 8px 0;
+      color:var(--accent-2);
+    }
+    label{
+      display:block;
+      font-size:14px;
+      margin-top:12px;
+      color:var(--muted);
+    }
+    input[type="text"],
+    input[type="number"],
+    select,
+    textarea{
+      width:100%;
+      padding:10px 12px;
+      margin-top:6px;
+      border-radius:8px;
+      border:1px solid rgba(0,0,0,0.08);
+      font-size:14px;
+      box-sizing:border-box;
+      background:white;
+    }
+    .buttons{
+      display:flex;
+      gap:8px;
+      margin-top:14px;
+      flex-wrap:wrap;
+    }
+    button{
+      padding:10px 14px;
+      border-radius:8px;
+      border:0;
+      cursor:pointer;
+      font-weight:600;
+      color:white;
+    }
+    .btn-go{ background: linear-gradient(90deg,var(--accent), #ff8c6b); }
+    .btn-clear{ background:#8888ff; }
+    .btn-reset{ background:#a0a0a0; }
+    .btn-lucky{ background: linear-gradient(90deg,#4ade80, var(--good)); }
+
+    .hint{
+      margin-top:10px;
+      font-size:13px;
+      color:var(--muted);
+    }
+
+    .cards-column{
+      flex:1;
+      min-height:200px;
+      display:flex;
+      flex-direction:column;
+      align-items:flex-end;
+    }
+
+    .stack{
+      width:420px;
+      display:flex;
+      flex-direction:column;
+      align-items:flex-end;
+      gap:14px;
+    }
+
+    .card {
+      width:420px;
+      border-radius:12px;
+      background: linear-gradient(180deg,var(--card-paper), #fffefc);
+      border:1px solid var(--card-edge);
+      box-shadow: 0 12px 30px rgba(20,20,30,0.12);
+      overflow:visible;
+      position:relative;
+      padding:16px;
+      display:flex;
+    }
+
+    .card::before{
+      content:"";
+      position:absolute;
+      left:50%;
+      top:12px;
+      bottom:12px;
+      width:2px;
+      background: linear-gradient(180deg, rgba(0,0,0,0.03), rgba(0,0,0,0.01));
+      transform:translateX(-50%);
+      border-radius:2px;
+    }
+
+    .left-panel, .right-panel{
+      width:50%;
+      padding:12px 14px;
+      box-sizing:border-box;
+    }
+
+    .left-panel{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .decor{
+      text-align:center;
+      color:var(--accent);
+      font-size:22px;
+      font-weight:700;
+      letter-spacing:1px;
+    }
+    .balloons{
+      font-size:34px;
+      margin-top:6px;
+      opacity:0.9;
+    }
+    .right-panel{
+      padding-left:22px;
+      color:var(--text);
+    }
+    .message{
+      font-size:16px;
+      line-height:1.4;
+      white-space:pre-wrap;
+    }
+    .signature{
+      margin-top:12px;
+      text-align:right;
+      font-weight:700;
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    .meta{
+      margin-top:8px;
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    .stack .card{
+      transition: transform .15s ease, box-shadow .15s ease;
+    }
+    .stack .card:hover{
+      transform: translateY(-6px);
+      box-shadow: 0 18px 40px rgba(20,20,30,0.18);
+    }
+
+    @media (max-width:880px){
+      .main{ flex-direction:column; align-items:center; }
+      .controls{ width:100%; max-width:540px;}
+      .stack{ width:100%; max-width:540px; align-items:center; }
+      .cards-column{ align-items:center; }
+      .card{ width:100%; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>CardCrafter: Blast of Birthday Cheer!</h1>
+    <p>Fill five boxes and get a funny inside-card message. New cards stack on top.</p>
+  </header>
+
+  <div class="main">
+    <div class="controls" aria-label="Card controls">
+      <h2>Make a funny birthday message</h2>
+
+      <label for="name">Name</label>
+      <input id="name" type="text" placeholder="e.g. Alex" />
+
+      <label for="age">Age</label>
+      <input id="age" type="number" min="0" placeholder="e.g. 29" />
+
+      <label for="hobby">Hobby</label>
+      <input id="hobby" type="text" placeholder="e.g. gardening" />
+
+      <label for="adjective">Adjective</label>
+      <input id="adjective" type="text" placeholder="e.g. marvelous" />
+
+      <label for="plural">Plural Noun</label>
+      <input id="plural" type="text" placeholder="e.g. cupcakes" />
+
+      <label for="tone">Tone (quick pick)</label>
+      <select id="tone">
+        <option value="silly">Silly</option>
+        <option value="sarcastic">Playful/Sarcastic</option>
+        <option value="sweet">Sweet & funny</option>
+      </select>
+
+      <div class="buttons">
+        <button id="lucky" class="btn-lucky" type="button">I'm feeling lucky</button>
+        <button id="generate" class="btn-go" type="button">Generate Card</button>
+        <button id="clear" class="btn-clear" type="button">Clear Inputs</button>
+        <button id="reset" class="btn-reset" type="button">Clear All Cards</button>
+      </div>
+
+      <div class="hint">
+        Tip: click "I'm feeling lucky" to auto-fill with funny words, then "Generate Card" to create the card.
+      </div>
+    </div>
+
+    <div class="cards-column" aria-live="polite">
+      <div class="stack" id="stack">
+        <!-- Generated cards will be inserted here. -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Helpers
+    function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+    function randInt(min, max){ return Math.floor(Math.random()*(max-min+1))+min; }
+    function escapeHtml(s){
+      if(!s) return "";
+      return String(s)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;");
+    }
+
+    function ordinal(n){
+      if(!n && n !== 0) return "";
+      const num = Number(n);
+      const mod100 = num % 100;
+      if (mod100 >= 11 && mod100 <= 13) return num + "th";
+      switch (num % 10) {
+        case 1: return num + "st";
+        case 2: return num + "nd";
+        case 3: return num + "rd";
+        default: return num + "th";
+      }
+    }
+
+    // Funny pre-defined choices for the lucky button
+    const funnyNames = [
+      "Bubbles", "Captain Giggles", "Sparky", "Professor Sprinkle", "Muffin",
+      "Zigzag", "Pickles", "Turbo", "Pudding", "Noodle"
+    ];
+    const funnyHobbies = [
+      "extreme napping", "competitive sock-pairing", "urban gardening", "meme archaeology",
+      "backyard kite juggling", "sleep podcasting", "cupcake sculpting", "moonwalking"
+    ];
+    const funnyAdjectives = [
+      "ridonkulous", "spectacularly odd", "glittery", "absurdly charming",
+      "sneakily brilliant", "delightfully suspicious", "crisply heroic"
+    ];
+    const funnyPlurals = [
+      "rubber ducks", "mismatched socks", "tiny hats", "leftover tacos",
+      "emoji collections", "mystery stickers", "unread notifications"
+    ];
+
+    // Also keep the sample arrays used for normal random-fill
+    const sampleNames = ["Alex","Sam","Jordan","Taylor","Jamie","Casey"];
+    const sampleHobbies = ["baking","gardening","gaming","knitting","kayaking","photography"];
+    const sampleAdjectives = ["marvelous","quirky","legendary","sparkly","brilliant","cheeky"];
+    const samplePlurals = ["cupcakes","trophies","socks","selfies","puns","stickers"];
+
+    // Tone lines and templates (unchanged except to accept new fields)
+    const sillyLines = [
+      "May your cake be as big as your hobby-induced mess!",
+      "Another year older, still too young to stop showing off your moves.",
+      "You're a masterpiece — slightly sticky in places, but a masterpiece.",
+      "If birthdays were apps, you'd be 'Premium Vintage' now.",
+      "May your power naps be long and your celebrations louder."
+    ];
+    const sarcasticLines = [
+      "Age is the price we pay for experience... and more candles.",
+      "Congrats — you've successfully avoided becoming a cautionary tale.",
+      "Don't worry about the wrinkles. They're just laugh-topography.",
+      "Older? Sure. Wiser? Up for debate. Funny? Absolutely."
+    ];
+    const sweetLines = [
+      "Hope your day is full of cake, giggles and everything you love.",
+      "Here's to more days chasing what makes you smile.",
+      "Wishing you extra sprinkles and extra hugs today.",
+      "May your year be as joyful as your favorite hobby."
+    ];
+
+    const templates = [
+      (n,a,h,adj,pl) => `Hey ${n}! ${a ? ordinal(a) : "Happy Birthday"}! Your ${adj} ${pl} and your ${h} are the perfect combo — chaos with style.`,
+      (n,a,h,adj,pl) => `Happy ${a ? ordinal(a) : "birthday"}, ${n}! At this age, every ${pl} you collect becomes a story. Keep being ${adj} and loud about it.`,
+      (n,a,h,adj,pl) => `${n}! ${a ? ordinal(a) : "Congrats"} — you're now officially ${adj}. Time to celebrate with ${pl} and an extra helping of ${h}.`,
+      (n,a,h,adj,pl) => `To ${n} on their ${a ? ordinal(a) : "special day"}: may your ${h} sessions be long and your ${pl} be plentiful. Stay ${adj}!`,
+      (n,a,h,adj,pl) => `Happy birthday, ${n}! ${a ? ordinal(a) : ""} years of being ${adj}, mastering ${h}, and collecting ${pl} like a pro.`
+    ];
+
+    // DOM elements
+    const nameInput = document.getElementById('name');
+    const ageInput = document.getElementById('age');
+    const hobbyInput = document.getElementById('hobby');
+    const adjInput = document.getElementById('adjective');
+    const pluralInput = document.getElementById('plural');
+    const toneInput = document.getElementById('tone');
+    const luckyBtn = document.getElementById('lucky');
+    const generateBtn = document.getElementById('generate');
+    const clearBtn = document.getElementById('clear');
+    const resetBtn = document.getElementById('reset');
+    const stack = document.getElementById('stack');
+
+    function buildMessage(name, age, hobby, adj, plural, tone){
+      const n = name || pick(sampleNames);
+      const a = age || ""; // may be blank
+      const h = hobby || pick(sampleHobbies);
+      const ad = adj || pick(sampleAdjectives);
+      const pl = plural || pick(samplePlurals);
+
+      const base = pick(templates)(n,a,h,ad,pl);
+
+      let toneLine = "";
+      if(tone === 'silly'){
+        toneLine = pick(sillyLines);
+      } else if(tone === 'sarcastic'){
+        toneLine = pick(sarcasticLines);
+      } else {
+        toneLine = pick(sweetLines);
+      }
+
+      const signOff = `Cheers,\nYour friendly card bot`;
+      return `${base}\n\n${toneLine}\n\n${signOff}`;
+    }
+
+    function addCardToStack(name, age, hobby, adj, plural, tone){
+      const now = new Date();
+      const time = now.toLocaleString();
+      const message = buildMessage(name, age, hobby, adj, plural, tone);
+
+      const escName = escapeHtml(name || "");
+      const escAge = escapeHtml(age || "");
+      const escHobby = escapeHtml(hobby || "");
+      const escAdj = escapeHtml(adj || "");
+      const escPlural = escapeHtml(plural || "");
+      const escMsg = escapeHtml(message);
+
+      const cardHtml = `
+        <div class="card" role="article" aria-label="Birthday card for ${escName || 'Friend'}">
+          <div class="left-panel">
+            <div>
+              <div class="decor">Happy Birthday!</div>
+              <div class="balloons">🎈🎉🎂</div>
+            </div>
+          </div>
+          <div class="right-panel">
+            <div class="message">${escMsg}</div>
+            <div class="signature">— From your pal</div>
+            <div class="meta">
+              For: ${escName || 'Someone special'}${escAge ? ' • Age: '+escAge : ''}${escHobby ? ' • Hobby: '+escHobby : ''}${escAdj ? ' • Adjective: '+escAdj : ''}${escPlural ? ' • Plural: '+escPlural : ''} • ${time}
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Newest on top
+      stack.insertAdjacentHTML('afterbegin', cardHtml);
+    }
+
+    // "I'm feeling lucky" fills the fields with funny choices.
+    luckyBtn.addEventListener('click', () => {
+      // 20% chance to pick a truly silly age like 21, 30, or 99; otherwise pick a random reasonable age
+      const sillyAges = [7, 13, 21, 29, 30, 42, 69, 99];
+      const age = Math.random() < 0.2 ? pick(sillyAges) : randInt(18, 80);
+
+      // Randomly choose from the funny arrays (gives more amusing results than the normal samples)
+      nameInput.value = pick(funnyNames);
+      ageInput.value = age;
+      hobbyInput.value = pick(funnyHobbies);
+      adjInput.value = pick(funnyAdjectives);
+      pluralInput.value = pick(funnyPlurals);
+
+      // Also randomly pick a tone for variety
+      toneInput.value = pick(['silly','sarcastic','sweet']);
+
+      // Brief visual cue: focus the Generate button so user can quickly create the card
+      generateBtn.focus();
+    });
+
+    generateBtn.addEventListener('click', () => {
+      const name = nameInput.value.trim();
+      const age = ageInput.value.trim();
+      const hobby = hobbyInput.value.trim();
+      const adj = adjInput.value.trim();
+      const plural = pluralInput.value.trim();
+      const tone = toneInput.value;
+
+      addCardToStack(name, age, hobby, adj, plural, tone);
+    });
+
+    clearBtn.addEventListener('click', () => {
+      nameInput.value = '';
+      ageInput.value = '';
+      hobbyInput.value = '';
+      adjInput.value = '';
+      pluralInput.value = '';
+      toneInput.value = 'silly';
+      nameInput.focus();
+    });
+
+    resetBtn.addEventListener('click', () => {
+      if(confirm("Remove all generated cards?")) {
+        stack.innerHTML = "";
+      }
+    });
+
+    [nameInput, ageInput, hobbyInput, adjInput, pluralInput].forEach(input =>{
+      input.addEventListener('keydown', (e)=>{
+        if(e.key === 'Enter'){
+          generateBtn.click();
+        }
+      });
+    });
+
+    // Example card on load
+    window.addEventListener('load', () => {
+      addCardToStack("Friend", "30", "celebrating", "marvelous", "cupcakes", "silly");
+    });
+  </script>
+</body>
+</html>
