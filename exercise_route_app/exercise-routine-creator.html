@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Training Card — Routine Builder</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+  :root{
+    --bg: #1c1c1e;
+    --bg-raised: #242427;
+    --bg-card: #2a2a2d;
+    --chalk: #f2f0ea;
+    --chalk-dim: #a8a6a0;
+    --line: #3a3a3d;
+    --iron: #c84b31;
+    --iron-dim: #7a3024;
+    --brass: #b8915a;
+    --steel: #5b7b91;
+    --steel-dim: #2e3c44;
+    --good: #6f8f5c;
+  }
+
+  *{ box-sizing: border-box; }
+
+  body{
+    margin:0;
+    background: var(--bg);
+    background-image:
+      radial-gradient(circle at 15% 8%, rgba(91,123,145,0.07), transparent 40%),
+      radial-gradient(circle at 90% 85%, rgba(200,75,49,0.06), transparent 45%);
+    color: var(--chalk);
+    font-family: 'Oswald', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+
+  .wrap{
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 36px 20px 64px;
+  }
+
+  /* ---------- Header ---------- */
+  header{
+    display:flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    border-bottom: 3px solid var(--chalk);
+    padding-bottom: 18px;
+    margin-bottom: 34px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .brand-mark{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--iron);
+    text-transform: uppercase;
+    margin: 0 0 4px;
+  }
+  h1{
+    font-family:'Oswald', sans-serif;
+    font-weight: 700;
+    font-size: clamp(28px, 4.2vw, 44px);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 0;
+    line-height: 1;
+  }
+  .tagline{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--chalk-dim);
+    text-align: right;
+    line-height: 1.6;
+    max-width: 260px;
+  }
+
+  /* ---------- Layout ---------- */
+  .layout{
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: 28px;
+    align-items: start;
+  }
+  @media (max-width: 880px){
+    .layout{ grid-template-columns: 1fr; }
+  }
+
+  /* ---------- Intake sheet (form) ---------- */
+  .sheet{
+    background: var(--bg-raised);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 24px 24px 26px;
+    position: sticky;
+    top: 20px;
+  }
+  @media (max-width: 880px){ .sheet{ position: static; } }
+
+  .sheet-label{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--brass);
+    margin: 0 0 18px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .sheet-label::before{
+    content:'';
+    width:8px; height:8px;
+    background: var(--brass);
+    display:inline-block;
+  }
+
+  .field{ margin-bottom: 18px; }
+  .field label{
+    display:block;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--chalk-dim);
+    margin-bottom: 7px;
+    font-weight: 500;
+  }
+  .field .hint{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    color: var(--chalk-dim);
+    opacity:.7;
+    margin-top: 5px;
+  }
+
+  .row2{ display:grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  input[type="number"]{
+    width: 100%;
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    color: var(--chalk);
+    padding: 10px 12px;
+    font-family:'JetBrains Mono', monospace;
+    font-size: 15px;
+    border-radius: 3px;
+    transition: border-color .15s ease;
+  }
+  input[type="number"]:focus{
+    outline: none;
+    border-color: var(--iron);
+  }
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button{ opacity: 1; }
+
+  .seg{
+    display:flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .seg button{
+    flex: 1 1 auto;
+    min-width: 80px;
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    color: var(--chalk-dim);
+    padding: 9px 8px;
+    font-family:'Oswald', sans-serif;
+    font-size: 13px;
+    letter-spacing: .3px;
+    text-transform: uppercase;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all .15s ease;
+  }
+  .seg button:hover{ border-color: var(--chalk-dim); color: var(--chalk); }
+  .seg button.active{
+    background: var(--iron);
+    border-color: var(--iron);
+    color: #fff;
+    font-weight: 600;
+  }
+
+  .chip-grid{
+    display:flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .chip{
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    color: var(--chalk-dim);
+    padding: 8px 12px;
+    font-family:'Oswald', sans-serif;
+    font-size: 12.5px;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all .15s ease;
+    user-select: none;
+  }
+  .chip:hover{ border-color: var(--steel); }
+  .chip.active{
+    background: var(--steel-dim);
+    border-color: var(--steel);
+    color: var(--chalk);
+  }
+
+  .generate-btn{
+    width: 100%;
+    background: var(--iron);
+    color: #fff;
+    border: none;
+    padding: 14px;
+    font-family:'Oswald', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    border-radius: 3px;
+    cursor: pointer;
+    margin-top: 6px;
+    transition: background .15s ease, transform .1s ease;
+  }
+  .generate-btn:hover{ background: #b03e27; }
+  .generate-btn:active{ transform: scale(0.99); }
+
+  .error-msg{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--iron);
+    margin-top: 10px;
+    display:none;
+  }
+
+  /* ---------- Output ---------- */
+  .output-empty{
+    border: 1px dashed var(--line);
+    border-radius: 4px;
+    padding: 60px 30px;
+    text-align: center;
+    color: var(--chalk-dim);
+    font-family:'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.8;
+  }
+  .output-empty .big{
+    font-family:'Oswald', sans-serif;
+    font-size: 20px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--chalk);
+    display:block;
+    margin-bottom: 10px;
+  }
+
+  .summary-strip{
+    display:grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    margin-bottom: 22px;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  @media (max-width: 600px){ .summary-strip{ grid-template-columns: repeat(2,1fr); } }
+  .summary-cell{
+    background: var(--bg-raised);
+    padding: 16px 14px;
+  }
+  .summary-cell .num{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--iron);
+    line-height: 1;
+  }
+  .summary-cell .lbl{
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--chalk-dim);
+    margin-top: 6px;
+  }
+
+  .week-board{
+    display:flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .day-card{
+    background: var(--bg-raised);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--steel);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .day-card.rest{ border-left-color: var(--brass); }
+
+  .day-head{
+    display:flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 20px;
+    background: var(--bg-card);
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .day-head .day-name{
+    font-size: 17px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+  }
+  .day-head .day-focus{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    color: var(--steel);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .day-card.rest .day-focus{ color: var(--brass); }
+
+  .exercise-table{
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .exercise-table thead th{
+    text-align: left;
+    font-family:'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--chalk-dim);
+    padding: 10px 20px 6px;
+    font-weight: 500;
+  }
+  .exercise-table thead th.num-col{ text-align: right; }
+  .exercise-table tbody td{
+    padding: 10px 20px;
+    border-top: 1px solid var(--line);
+    font-size: 14.5px;
+    vertical-align: top;
+  }
+  .exercise-table tbody td.num-col{
+    text-align: right;
+    font-family:'JetBrains Mono', monospace;
+    font-variant-numeric: tabular-nums;
+    color: var(--chalk);
+    white-space: nowrap;
+  }
+  .exercise-table tbody tr:hover td{ background: rgba(255,255,255,0.02); }
+  .ex-name{ font-weight: 500; }
+  .ex-target{
+    display:block;
+    font-family:'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    color: var(--chalk-dim);
+    margin-top: 2px;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+  }
+
+  .rest-body{
+    padding: 16px 20px 20px;
+    font-family:'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--chalk-dim);
+    line-height: 1.6;
+  }
+
+  .day-footer{
+    padding: 10px 20px 16px;
+    font-family:'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--chalk-dim);
+    border-top: 1px solid var(--line);
+  }
+
+  .notes-card{
+    margin-top: 22px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 18px 22px;
+    background: var(--bg-raised);
+    font-size: 13.5px;
+    line-height: 1.7;
+    color: var(--chalk-dim);
+  }
+  .notes-card strong{ color: var(--chalk); }
+  .notes-card ul{ margin: 8px 0 0; padding-left: 20px; }
+  .notes-card li{ margin-bottom: 4px; }
+
+  .disclaimer{
+    margin-top: 18px;
+    font-family:'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    color: var(--chalk-dim);
+    opacity: .65;
+    line-height: 1.6;
+    border-top: 1px solid var(--line);
+    padding-top: 14px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <p class="brand-mark">// Coach's Intake — Plan Generator</p>
+      <h1>Training Card</h1>
+    </div>
+    <p class="tagline">Fill the intake sheet.<br>Get a weekly split with sets, reps, and rest built around it.</p>
+  </header>
+
+  <div class="layout">
+
+    <!-- INTAKE FORM -->
+    <div class="sheet">
+      <p class="sheet-label">Intake Sheet</p>
+
+      <div class="row2">
+        <div class="field">
+          <label for="age">Age</label>
+          <input type="number" id="age" placeholder="e.g. 29" min="13" max="90">
+        </div>
+        <div class="field">
+          <label for="weight">Weight (kg)</label>
+          <input type="number" id="weight" placeholder="e.g. 70" min="30" max="250">
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="height">Height (cm)</label>
+        <input type="number" id="height" placeholder="e.g. 172" min="120" max="230">
+      </div>
+
+      <div class="field">
+        <label>Fitness goal</label>
+        <div class="seg" id="goalSeg">
+          <button data-val="fat_loss">Fat loss</button>
+          <button data-val="muscle_gain">Muscle gain</button>
+          <button data-val="strength">Strength</button>
+          <button data-val="endurance">Endurance</button>
+          <button data-val="general">General fitness</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Training experience</label>
+        <div class="seg" id="levelSeg">
+          <button data-val="beginner">Beginner</button>
+          <button data-val="intermediate">Intermediate</button>
+          <button data-val="advanced">Advanced</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Days available per week</label>
+        <div class="seg" id="daysSeg">
+          <button data-val="3">3</button>
+          <button data-val="4">4</button>
+          <button data-val="5">5</button>
+          <button data-val="6">6</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Priority body parts <span class="hint">(optional — pick what to emphasize)</span></label>
+        <div class="chip-grid" id="focusChips">
+          <div class="chip" data-val="chest">Chest</div>
+          <div class="chip" data-val="back">Back</div>
+          <div class="chip" data-val="shoulders">Shoulders</div>
+          <div class="chip" data-val="arms">Arms</div>
+          <div class="chip" data-val="legs">Legs</div>
+          <div class="chip" data-val="glutes">Glutes</div>
+          <div class="chip" data-val="core">Core</div>
+        </div>
+      </div>
+
+      <button class="generate-btn" id="generateBtn">Generate plan</button>
+      <p class="error-msg" id="errorMsg"></p>
+    </div>
+
+    <!-- OUTPUT -->
+    <div id="outputArea">
+      <div class="output-empty">
+        <span class="big">No plan yet</span>
+        Enter age, weight, height, pick a goal — then generate. The weekly card will build itself here.
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function(){
+
+  // ---------- State ----------
+  const state = {
+    goal: null,
+    level: null,
+    days: null,
+    focus: new Set()
+  };
+
+  function wireSeg(id, key, multi){
+    const el = document.getElementById(id);
+    el.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        el.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        state[key] = btn.dataset.val;
+      });
+    });
+  }
+  wireSeg('goalSeg', 'goal');
+  wireSeg('levelSeg', 'level');
+  wireSeg('daysSeg', 'days');
+
+  document.querySelectorAll('#focusChips .chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const v = chip.dataset.val;
+      if(state.focus.has(v)){ state.focus.delete(v); chip.classList.remove('active'); }
+      else { state.focus.add(v); chip.classList.add('active'); }
+    });
+  });
+
+  // ---------- Exercise library ----------
+  // sets: [beginner, intermediate, advanced] ; reps depend on goal
+  const LIB = {
+    chest: [
+      {name:'Push-ups', target:'Chest / Triceps', equip:'bodyweight'},
+      {name:'Flat dumbbell press', target:'Chest', equip:'dumbbell'},
+      {name:'Incline dumbbell press', target:'Upper chest', equip:'dumbbell'},
+      {name:'Cable chest fly', target:'Chest (stretch)', equip:'cable'},
+      {name:'Dips', target:'Lower chest / Triceps', equip:'bodyweight'}
+    ],
+    back: [
+      {name:'Lat pulldown', target:'Lats', equip:'machine'},
+      {name:'Seated cable row', target:'Mid-back', equip:'cable'},
+      {name:'Bent-over barbell row', target:'Back thickness', equip:'barbell'},
+      {name:'Pull-ups', target:'Lats / Biceps', equip:'bodyweight'},
+      {name:'Single-arm dumbbell row', target:'Lats / Rear delts', equip:'dumbbell'}
+    ],
+    shoulders: [
+      {name:'Seated dumbbell shoulder press', target:'Front / Side delts', equip:'dumbbell'},
+      {name:'Lateral raise', target:'Side delts', equip:'dumbbell'},
+      {name:'Rear-delt fly', target:'Rear delts', equip:'dumbbell'},
+      {name:'Face pulls', target:'Rear delts / Rotator cuff', equip:'cable'},
+      {name:'Overhead barbell press', target:'Delts / Triceps', equip:'barbell'}
+    ],
+    arms: [
+      {name:'Barbell curl', target:'Biceps', equip:'barbell'},
+      {name:'Hammer curl', target:'Biceps / Forearm', equip:'dumbbell'},
+      {name:'Triceps rope pushdown', target:'Triceps', equip:'cable'},
+      {name:'Overhead triceps extension', target:'Triceps (long head)', equip:'dumbbell'},
+      {name:'Close-grip bench press', target:'Triceps / Chest', equip:'barbell'}
+    ],
+    legs: [
+      {name:'Back squat', target:'Quads / Glutes', equip:'barbell'},
+      {name:'Leg press', target:'Quads / Glutes', equip:'machine'},
+      {name:'Romanian deadlift', target:'Hamstrings / Glutes', equip:'barbell'},
+      {name:'Walking lunges', target:'Quads / Glutes / Balance', equip:'dumbbell'},
+      {name:'Leg curl', target:'Hamstrings', equip:'machine'},
+      {name:'Standing calf raise', target:'Calves', equip:'machine'}
+    ],
+    glutes: [
+      {name:'Hip thrust', target:'Glutes', equip:'barbell'},
+      {name:'Bulgarian split squat', target:'Glutes / Quads', equip:'dumbbell'},
+      {name:'Cable kickback', target:'Glutes (isolation)', equip:'cable'},
+      {name:'Sumo deadlift', target:'Glutes / Hamstrings', equip:'barbell'}
+    ],
+    core: [
+      {name:'Hanging knee raise', target:'Lower abs', equip:'bodyweight'},
+      {name:'Cable woodchopper', target:'Obliques', equip:'cable'},
+      {name:'Plank', target:'Core stability', equip:'bodyweight', isHold:true},
+      {name:'Weighted sit-up', target:'Upper abs', equip:'dumbbell'},
+      {name:'Dead bug', target:'Core / anti-rotation', equip:'bodyweight'}
+    ],
+    cardio: [
+      {name:'Incline treadmill walk', target:'Aerobic base', equip:'cardio', isCardio:true},
+      {name:'Cycling intervals', target:'Conditioning', equip:'cardio', isCardio:true},
+      {name:'Rowing machine', target:'Full-body conditioning', equip:'cardio', isCardio:true},
+      {name:'Jump rope', target:'Conditioning / Calves', equip:'cardio', isCardio:true}
+    ]
+  };
+
+  // ---------- Goal-based prescription ----------
+  const GOAL_PRESETS = {
+    fat_loss:    {repRange:'12–15', setsBase:3, restSec:45,  cardio:true,  cardioNote:'20–25 min moderate-intensity cardio to close the session'},
+    muscle_gain: {repRange:'8–12',  setsBase:4, restSec:75,  cardio:false, cardioNote:null},
+    strength:    {repRange:'4–6',   setsBase:5, restSec:150, cardio:false, cardioNote:null},
+    endurance:   {repRange:'15–20', setsBase:3, restSec:30,  cardio:true,  cardioNote:'15–20 min steady-state cardio'},
+    general:     {repRange:'10–12', setsBase:3, restSec:60,  cardio:true,  cardioNote:'10–15 min light cardio (optional)'}
+  };
+
+  const LEVEL_SET_ADJUST = { beginner: -1, intermediate: 0, advanced: 1 };
+  const LEVEL_EX_COUNT = { beginner: 3, intermediate: 4, advanced: 5 };
+
+  const GOAL_LABEL = {
+    fat_loss:'Fat Loss', muscle_gain:'Muscle Gain', strength:'Strength', endurance:'Endurance', general:'General Fitness'
+  };
+
+  // ---------- Split templates by days/week ----------
+  // each entry: {name, parts:[bodyPart keys], isRest}
+  const SPLITS = {
+    3: [
+      {name:'Day 1 — Full Body A', parts:['legs','chest','back','core']},
+      {name:'Day 2', isRest:true},
+      {name:'Day 3 — Full Body B', parts:['legs','shoulders','arms','core']},
+      {name:'Day 4', isRest:true},
+      {name:'Day 5 — Full Body C', parts:['back','chest','glutes','core']},
+      {name:'Day 6', isRest:true},
+      {name:'Day 7', isRest:true}
+    ],
+    4: [
+      {name:'Day 1 — Upper Body', parts:['chest','back','shoulders','arms']},
+      {name:'Day 2 — Lower Body', parts:['legs','glutes','core']},
+      {name:'Day 3', isRest:true},
+      {name:'Day 4 — Push (Chest/Shoulders/Triceps)', parts:['chest','shoulders','arms']},
+      {name:'Day 5 — Pull + Legs', parts:['back','legs','glutes']},
+      {name:'Day 6', isRest:true},
+      {name:'Day 7', isRest:true}
+    ],
+    5: [
+      {name:'Day 1 — Chest & Triceps', parts:['chest','arms']},
+      {name:'Day 2 — Back & Biceps', parts:['back','arms']},
+      {name:'Day 3 — Legs & Glutes', parts:['legs','glutes']},
+      {name:'Day 4 — Shoulders & Core', parts:['shoulders','core']},
+      {name:'Day 5 — Full Body / Weak Points', parts:['legs','chest','back','core']},
+      {name:'Day 6', isRest:true},
+      {name:'Day 7', isRest:true}
+    ],
+    6: [
+      {name:'Day 1 — Push', parts:['chest','shoulders','arms']},
+      {name:'Day 2 — Pull', parts:['back','arms']},
+      {name:'Day 3 — Legs', parts:['legs','glutes']},
+      {name:'Day 4 — Push', parts:['chest','shoulders','arms']},
+      {name:'Day 5 — Pull', parts:['back','core']},
+      {name:'Day 6 — Legs & Glutes', parts:['legs','glutes','core']},
+      {name:'Day 7', isRest:true}
+    ]
+  };
+
+  function pickExercises(part, count, focusSet){
+    const pool = LIB[part] ? LIB[part].slice() : [];
+    // if this part is a priority focus, allow one extra exercise
+    const n = focusSet.has(part) ? Math.min(count + 1, pool.length) : Math.min(count, pool.length);
+    return pool.slice(0, n);
+  }
+
+  function setsForDay(level, goal, isFocusPart){
+    const preset = GOAL_PRESETS[goal];
+    let sets = preset.setsBase + LEVEL_SET_ADJUST[level];
+    if(isFocusPart) sets += 1;
+    return Math.max(2, Math.min(sets, 6));
+  }
+
+  function bmiCategory(weightKg, heightCm){
+    const h = heightCm / 100;
+    const bmi = weightKg / (h*h);
+    let cat = 'Normal';
+    if(bmi < 18.5) cat = 'Underweight';
+    else if(bmi >= 25 && bmi < 30) cat = 'Overweight';
+    else if(bmi >= 30) cat = 'Obese';
+    return {bmi: bmi.toFixed(1), cat};
+  }
+
+  function restSecToLabel(sec){
+    if(sec < 60) return sec + ' sec';
+    const m = sec/60;
+    return (m % 1 === 0 ? m : m.toFixed(1)) + ' min';
+  }
+
+  function buildPlan(){
+    const age = parseFloat(document.getElementById('age').value);
+    const weight = parseFloat(document.getElementById('weight').value);
+    const height = parseFloat(document.getElementById('height').value);
+    const errEl = document.getElementById('errorMsg');
+
+    if(!age || !weight || !height || !state.goal || !state.level || !state.days){
+      errEl.textContent = 'Fill in age, weight, height, and pick a goal, experience level, and days/week.';
+      errEl.style.display = 'block';
+      return;
+    }
+    errEl.style.display = 'none';
+
+    const days = parseInt(state.days, 10);
+    const level = state.level;
+    const goal = state.goal;
+    const preset = GOAL_PRESETS[goal];
+    const exCount = LEVEL_EX_COUNT[level];
+    const template = SPLITS[days];
+    const focusSet = state.focus;
+
+    const { bmi, cat } = bmiCategory(weight, height);
+
+    // age-based caution flag
+    let ageNote = '';
+    if(age >= 50){
+      ageNote = 'Programmed with slightly longer rest and a controlled rep tempo for joint-friendly loading at your age bracket.';
+    } else if(age < 18){
+      ageNote = 'Bodyweight and machine-biased prescription — keep loads light and prioritize technique while still growing.';
+    }
+
+    // Build day cards
+    let trainingDayCount = 0;
+    const dayCardsHtml = template.map(day => {
+      if(day.isRest){
+        return `
+        <div class="day-card rest">
+          <div class="day-head">
+            <span class="day-name">${day.name}</span>
+            <span class="day-focus">Rest / Recovery</span>
+          </div>
+          <div class="rest-body">
+            Full rest or light activity (walk, stretch, mobility work). This is where the muscle actually rebuilds — don't skip it to "catch up."
+          </div>
+        </div>`;
+      }
+
+      trainingDayCount++;
+      const rows = [];
+      day.parts.forEach(part => {
+        const isFocus = focusSet.has(part);
+        const exercises = pickExercises(part, exCount, focusSet);
+        exercises.forEach(ex => {
+          const sets = setsForDay(level, goal, isFocus);
+          const reps = ex.isHold ? '30–45 sec hold' : (ex.isCardio ? '—' : preset.repRange);
+          rows.push(`
+            <tr>
+              <td><span class="ex-name">${ex.name}</span><span class="ex-target">${ex.target} · ${part}${isFocus ? ' · priority' : ''}</span></td>
+              <td class="num-col">${ex.isCardio ? '—' : sets}</td>
+              <td class="num-col">${reps}</td>
+              <td class="num-col">${ex.isCardio ? '—' : restSecToLabel(preset.restSec)}</td>
+            </tr>`);
+        });
+      });
+
+      const cardioRow = preset.cardio ? `
+            <tr>
+              <td><span class="ex-name">${preset.cardioNote.split(' to ')[0].split(' (')[0]}</span><span class="ex-target">Conditioning · finisher</span></td>
+              <td class="num-col">—</td>
+              <td class="num-col">${preset.cardioNote}</td>
+              <td class="num-col">—</td>
+            </tr>` : '';
+
+      return `
+        <div class="day-card">
+          <div class="day-head">
+            <span class="day-name">${day.name}</span>
+            <span class="day-focus">${day.parts.join(' · ')}</span>
+          </div>
+          <table class="exercise-table">
+            <thead>
+              <tr>
+                <th>Exercise</th>
+                <th class="num-col">Sets</th>
+                <th class="num-col">Reps</th>
+                <th class="num-col">Rest</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows.join('')}
+              ${cardioRow}
+            </tbody>
+          </table>
+          <div class="day-footer">Goal-tuned rep range: ${preset.repRange} · ${GOAL_LABEL[goal]} protocol</div>
+        </div>`;
+    }).join('');
+
+    const restDayCount = template.filter(d => d.isRest).length;
+
+    const summaryHtml = `
+      <div class="summary-strip">
+        <div class="summary-cell">
+          <div class="num">${trainingDayCount}</div>
+          <div class="lbl">Training days / wk</div>
+        </div>
+        <div class="summary-cell">
+          <div class="num">${restDayCount}</div>
+          <div class="lbl">Rest days / wk</div>
+        </div>
+        <div class="summary-cell">
+          <div class="num">${preset.repRange}</div>
+          <div class="lbl">Rep range</div>
+        </div>
+        <div class="summary-cell">
+          <div class="num">${bmi}</div>
+          <div class="lbl">BMI · ${cat}</div>
+        </div>
+      </div>`;
+
+    const focusListLabel = focusSet.size ? Array.from(focusSet).join(', ') : 'balanced across all parts';
+
+    const notesHtml = `
+      <div class="notes-card">
+        <strong>Coach's notes</strong>
+        <ul>
+          <li>Plan built for: ${age}y, ${weight}kg, ${height}cm · ${GOAL_LABEL[goal]} · ${level} level.</li>
+          <li>Priority body parts: ${focusListLabel}.</li>
+          ${ageNote ? `<li>${ageNote}</li>` : ''}
+          <li>Progress by adding small load or 1 rep per set once you can hit the top of the rep range with good form on all sets.</li>
+          <li>If two consecutive sessions feel noticeably harder to recover from, add an extra rest day that week.</li>
+        </ul>
+      </div>
+      <p class="disclaimer">This planner gives a general starting structure based on common training principles, not medical advice. Check with a doctor or physiotherapist before starting a new program, especially with any injury, pregnancy, or cardiovascular condition.</p>
+    `;
+
+    document.getElementById('outputArea').innerHTML = summaryHtml + `<div class="week-board">${dayCardsHtml}</div>` + notesHtml;
+  }
+
+  document.getElementById('generateBtn').addEventListener('click', buildPlan);
+
+})();
+</script>
+</body>
+</html>
